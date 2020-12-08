@@ -108,8 +108,6 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
     return false;
   }
 
-  hb_font_set_scale(font, 0, pixel_height);
-
   size_t new_index = ctx->bs_fonts_len;
 
   bs_font_t *tmp = realloc(ctx->bs_fonts, sizeof(bs_font_t) * (new_index + 1));
@@ -166,10 +164,6 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
 
     hb_shape(ctx->bs_fonts[font_index].bs_font_hb, buf, NULL, 0);
 
-//    if(!hb_buffer_has_positions(buf)) {
-//      return;
-//    }
-
     unsigned int glyph_count = 0;
     hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(buf, &glyph_count);
     hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
@@ -189,6 +183,10 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
     LOG("Missing %u/%u glyphs", missing_glyphs, glyph_count);
 
     if(have_glyphs) {
+      int scale_x, scale_y;
+      hb_font_get_scale(ctx->bs_fonts[font_index].bs_font_hb, &scale_x, &scale_y);
+      LOG("scale_x: %d scale_y: %d", scale_x, scale_y);
+
       for(unsigned int i = 0; i < glyph_count; i++) {
         stbtt_fontinfo *font = &ctx->bs_fonts[font_index].bs_font_stbtt;
         float scale_y = stbtt_ScaleForPixelHeight(font,
