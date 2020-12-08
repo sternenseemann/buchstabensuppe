@@ -134,27 +134,74 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
     return;
   }
 
-  hb_buffer_t *buf = hb_buffer_create();
-
-  // Add grapheme to buffer, but use item_offset to give harfbuzz context
-  hb_buffer_add_utf32(buf, str.bs_utf32_buffer, str.bs_utf32_buffer_len,
-    (unsigned int) offset, (int) len);
-
-  if(hb_buffer_get_length(buf) <= 0) {
-    return;
-  }
-
   bool have_glyphs = false;
   size_t font_index = 0;
 
   while(!have_glyphs && font_index < ctx->bs_fonts_len) {
+    hb_buffer_t *buf = hb_buffer_create();
+    // Add grapheme to buffer, but use item_offset to give harfbuzz context
+    hb_buffer_add_utf32(buf, str.bs_utf32_buffer, str.bs_utf32_buffer_len,
+      (unsigned int) offset, (int) len);
+
+    hb_buffer_guess_segment_properties(buf);
+
+    if(hb_buffer_get_length(buf) <= 0) {
+      hb_buffer_destroy(buf);
+      return;
+    }
+
     hb_shape(ctx->bs_fonts[font_index].bs_font_hb, buf, NULL, 0);
 
 //    if(!hb_buffer_has_positions(buf)) {
 //      return;
 //    }
- 
-    have_glyphs = true; // TODO
+
+    unsigned int glyph_count = 0;
+    hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(buf, &glyph_count);
+    //hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
+
+    // first check all glyphs wether they are in this font
+    // TODO: fall back per glyph possibly?
+    have_glyphs = true;
+    unsigned int missing_glyphs = 0;
+    for(unsigned int i = 0; i < glyph_count; i++) {
+      if(glyph_info[i].codepoint == 0) {
+        have_glyphs = false;
+        missing_glyphs++;
+        printf("Missing glyph: id %x, index %u\n", glyph_info[i].codepoint, i);
+      }
+    }
+
+    printf("Missing %u/%u glyphs\n", missing_glyphs, glyph_count);
+
+    if(have_glyphs) {
+      for(unsigned int i = 0; i < glyph_count; i++) {
+        stbtt_fontinfo *font = &ctx->bs_fonts[font_index].bs_font_stbtt;
+        float scale_y = stbtt_ScaleForPixelHeight(font,
+          ctx->bs_fonts[font_index].bs_font_pixel_height);
+
+        int width, height, x_offset, y_offset;
+
+        // ascii render every glyph for now
+        unsigned char *bitmap = stbtt_GetGlyphBitmap(font, 0, scale_y,
+          glyph_info[i].codepoint, &width, &height, &x_offset, &y_offset);
+
+        for(int y = 0; y < height; y++) {
+          for(int x = 0; x < width; x++) {
+            unsigned char pixel = bitmap[y * width + x];
+
+            putchar(pixel > 0x80 ? '#' : ' ');
+          }
+          putchar('\n');
+        }
+
+        free(bitmap);
+      }
+    }
+
+    hb_buffer_destroy(buf);
+
+    font_index++;
   }
 }
 
