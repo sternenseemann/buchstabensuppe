@@ -1,0 +1,8 @@
+#*.ttf
+result*
+*.o
+/test
+
+.dep**
+.target.*
+.lock.*
