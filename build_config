@@ -1,0 +1,4 @@
+CC=cc
+CFLAGS="-W -Wall -Wextra -Os -std=c99 -g -lm"
+
+# vim: ft=sh
