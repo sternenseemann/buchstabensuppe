@@ -194,27 +194,24 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
         float scale_y = stbtt_ScaleForPixelHeight(font,
           ctx->bs_fonts[font_index].bs_font_pixel_height);
 
-        int width, height, x_offset, y_offset;
+        int x_offset, y_offset;
 
         // ascii render every glyph for now
-        unsigned char *bitmap = stbtt_GetGlyphBitmap(font, 0, scale_y,
-          glyph_info[i].codepoint, &width, &height, &x_offset, &y_offset);
+        bs_bitmap_t bitmap;
+        bitmap.bs_bitmap = stbtt_GetGlyphBitmap(font, 0, scale_y,
+          glyph_info[i].codepoint, &bitmap.bs_bitmap_width, &bitmap.bs_bitmap_height,
+          &x_offset, &y_offset);
 
-        if(width != 0 || height != 0) {
-          LOG("Cluster id: %u x: %d y: %d advance: %d", glyph_info[i].cluster,
-            glyph_pos[i].x_offset, glyph_pos[i].y_offset, glyph_pos[i].x_advance);
+        if(bitmap.bs_bitmap_width != 0 || bitmap.bs_bitmap_height != 0) {
+          LOG("Cluster id: %u x: %d y: %d advance_x: %d advance_y: %d",
+            glyph_info[i].cluster,
+            glyph_pos[i].x_offset, glyph_pos[i].y_offset,
+            glyph_pos[i].x_advance, glyph_pos[i].y_advance);
+
+          bs_bitmap_print(bitmap);
         }
 
-        for(int y = 0; y < height; y++) {
-          for(int x = 0; x < width; x++) {
-            unsigned char pixel = bitmap[y * width + x];
-
-            fputs(pixel > 0x80 ? "█" : " ", stdout);
-          }
-          putchar('\n');
-        }
-
-        free(bitmap);
+        free(bitmap.bs_bitmap);
       }
     }
 
@@ -293,4 +290,18 @@ bool bs_utf32_buffer_append(uint32_t *us, size_t l, bs_utf32_buffer_t *buf) {
 
 bool bs_utf32_buffer_append_single(uint32_t u, bs_utf32_buffer_t *buf) {
   return bs_utf32_buffer_append(&u, 1, buf);
+}
+
+void bs_bitmap_print(bs_bitmap_t bitmap) {
+  int h = bitmap.bs_bitmap_height;
+  int w = bitmap.bs_bitmap_width;
+
+  for(int y = 0; y < h; y++) {
+    for(int x = 0; x < w; x++) {
+      unsigned char pixel = bitmap.bs_bitmap[y * w + x];
+
+      fputs(pixel > 0x80 ? "█" : " ", stdout);
+    }
+    putchar('\n');
+  }
 }
