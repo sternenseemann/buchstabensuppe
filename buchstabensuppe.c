@@ -11,6 +11,11 @@
 
 #include "buchstabensuppe.h"
 
+#define LOG(...) \
+  fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); \
+  fprintf(stderr, __VA_ARGS__); \
+  fputc('\n', stderr);
+
 void bs_context_init(bs_context_t *ctx) {
   ctx->bs_fonts = NULL;
   ctx->bs_fonts_len = 0;
@@ -35,6 +40,7 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
   memset(&finfo, 0, sizeof(struct stat));
 
   if(stat(font_path, &finfo) != 0) {
+    LOG("Error: could not stat %s", font_path);
     return false;
   }
 
@@ -42,12 +48,14 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
   unsigned char *file_buffer = malloc(sizeof(unsigned char) * file_buffer_size);
 
   if(file_buffer == NULL) {
+    LOG("Error: Could not allocate memory");
     return false;
   }
 
   FILE *font_file = fopen(font_path, "rb");
 
   if(font_file == NULL) {
+    LOG("Error: Could not open file %s", font_path);
     free(file_buffer);
     return false;
   }
@@ -56,6 +64,7 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
     sizeof(unsigned char), font_file);
 
   if(!feof(font_file) && read == file_buffer_size * sizeof(unsigned char)) {
+    LOG("Error: did not read font file fully");
     fclose(font_file);
     free(file_buffer);
   }
@@ -66,6 +75,7 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
 
   if(!stbtt_InitFont(&stbtt_font, file_buffer,
         stbtt_GetFontOffsetForIndex(file_buffer, font_index))) {
+    LOG("Error: stbtt_InitFont failed");
     free(file_buffer);
     return false;
   }
@@ -74,6 +84,7 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
     sizeof(unsigned char) * file_buffer_size, HB_MEMORY_MODE_READONLY, NULL, NULL);
 
   if(hb_blob_get_length(file) == 0) {
+    LOG("Error: could not create harfbuzz blob");
     hb_blob_destroy(file);
     free(file_buffer);
     return false;
@@ -83,6 +94,7 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
   hb_blob_destroy(file);
 
   if(hb_face_get_glyph_count(face) == 0) {
+    LOG("Error: could not create harfbuzz face");
     free(file_buffer);
     return false;
   }
@@ -91,6 +103,7 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
   hb_face_destroy(face);
 
   if(font == NULL) {
+    LOG("Error: could not create harfbuzz font");
     free(file_buffer);
     return false;
   }
@@ -102,6 +115,7 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
   bs_font_t *tmp = realloc(ctx->bs_fonts, sizeof(bs_font_t) * (new_index + 1));
 
   if(tmp == NULL) {
+    LOG("Error: couldn't allocate memory");
     hb_font_destroy(font);
     free(file_buffer);
     return false;
@@ -158,7 +172,7 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
 
     unsigned int glyph_count = 0;
     hb_glyph_info_t *glyph_info = hb_buffer_get_glyph_infos(buf, &glyph_count);
-    //hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
+    hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
 
     // first check all glyphs wether they are in this font
     // TODO: fall back per glyph possibly?
@@ -168,11 +182,11 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
       if(glyph_info[i].codepoint == 0) {
         have_glyphs = false;
         missing_glyphs++;
-        printf("Missing glyph: id %x, index %u\n", glyph_info[i].codepoint, i);
+        LOG("Missing glyph: id %x, index %u", glyph_info[i].codepoint, i);
       }
     }
 
-    printf("Missing %u/%u glyphs\n", missing_glyphs, glyph_count);
+    LOG("Missing %u/%u glyphs", missing_glyphs, glyph_count);
 
     if(have_glyphs) {
       for(unsigned int i = 0; i < glyph_count; i++) {
@@ -186,11 +200,16 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
         unsigned char *bitmap = stbtt_GetGlyphBitmap(font, 0, scale_y,
           glyph_info[i].codepoint, &width, &height, &x_offset, &y_offset);
 
+        if(width != 0 || height != 0) {
+          LOG("Cluster id: %u x: %d y: %d advance: %d", glyph_info[i].cluster,
+            glyph_pos[i].x_offset, glyph_pos[i].y_offset, glyph_pos[i].x_advance);
+        }
+
         for(int y = 0; y < height; y++) {
           for(int x = 0; x < width; x++) {
             unsigned char pixel = bitmap[y * width + x];
 
-            putchar(pixel > 0x80 ? '#' : ' ');
+            fputs(pixel > 0x80 ? "█" : " ", stdout);
           }
           putchar('\n');
         }
