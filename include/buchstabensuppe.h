@@ -1,7 +1,9 @@
 #ifndef BUCHSTABENSUPPE_H
 #define BUCHSTABENSUPPE_H
 
-#include "third_party/stb/stb_truetype.h"
+#include <buchstabensuppe/bitmap.h>
+#include <stb_truetype.h>
+
 #include <harfbuzz/hb.h>
 
 #include <stdbool.h>
@@ -25,26 +27,6 @@ bool bs_utf32_buffer_append_single(uint32_t, bs_utf32_buffer_t *);
 
 bs_utf32_buffer_t bs_decode_utf8(const char *, size_t);
 
-// bitmap api
-
-typedef struct bs_bitmap {
-  unsigned char *bs_bitmap;
-
-  // TODO make unsigned
-  int   bs_bitmap_height;
-  int   bs_bitmap_width;
-} bs_bitmap_t;
-
-typedef struct bs_bm_view {
-  bs_bitmap_t  bs_view_bitmap;
-  unsigned int bs_view_offset_x;
-  unsigned int bs_view_offset_y;
-  unsigned int bs_view_width;
-  unsigned int bs_view_height;
-} bs_view_t;
-
-void bs_bitmap_print(bs_bitmap_t);
-
 // main buchstabensuppe api
 
 typedef struct bs_font {
@@ -58,6 +40,8 @@ typedef struct bs_font {
 typedef struct bs_context {
   bs_font_t  *bs_fonts;
   size_t      bs_fonts_len;
+
+  bool        bs_grayscale;
 } bs_context_t;
 
 void bs_context_init(bs_context_t *);

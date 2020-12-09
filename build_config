@@ -1,4 +1,7 @@
+AR=ar
+RANLIB=ranlib
 CC=cc
 CFLAGS="-W -Wall -Wextra -Os -std=c99 -g -lm"
+CFLAGS="$CFLAGS -Iinclude -Ithird_party/stb"
 
 # vim: ft=sh

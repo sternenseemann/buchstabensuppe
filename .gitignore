@@ -1,6 +1,7 @@
 #*.ttf
 result*
 *.o
+*.a
 /*.exe
 
 .dep**

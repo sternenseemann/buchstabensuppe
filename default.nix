@@ -13,20 +13,12 @@ let
         filter = gi.gitignoreFilter (builtins.readFile ./.gitignore) ./.;
       };
 
+      makeFlags = [ "PREFIX=${placeholder "out"}" ];
+
       nativeBuildInputs = [ redo-c ];
       buildInputs = [ utf8proc harfbuzz freetype ];
 
-      buildPhase = "redo demo.exe";
-
-      installPhase = ''
-        install -Dm755 demo.exe $out/bin/buchstabensuppe-demo
-      '';
-
       doCheck = true;
-      checkPhase = ''
-        redo test.exe
-        ./test.exe
-      '';
     };
 in
 

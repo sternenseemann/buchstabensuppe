@@ -3,7 +3,7 @@
 
 #include "buchstabensuppe.h"
 
-#define RENDER_EMOJI "🧑‍🎄"
+#define RENDER_TEST "g̈"
 
 int main(int argc, char **argv) {
   struct bs_context ctx;

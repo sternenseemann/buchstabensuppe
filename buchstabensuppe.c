@@ -5,11 +5,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include "third_party/stb/stb_truetype.h"
+#include <stb_truetype.h>
 #include <utf8proc.h>
 #include <harfbuzz/hb.h>
 
-#include "buchstabensuppe.h"
+#include <buchstabensuppe.h>
+
+#define FONT_SCALE_MULTIPLIER 64
 
 #define LOG(...) \
   fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); \
@@ -19,6 +21,7 @@
 void bs_context_init(bs_context_t *ctx) {
   ctx->bs_fonts = NULL;
   ctx->bs_fonts_len = 0;
+  ctx->bs_grayscale = true;
 }
 
 void bs_context_free(bs_context_t *ctx) {
@@ -107,6 +110,9 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
     free(file_buffer);
     return false;
   }
+
+  hb_font_set_scale(font, pixel_height * FONT_SCALE_MULTIPLIER,
+      pixel_height * FONT_SCALE_MULTIPLIER);
 
   size_t new_index = ctx->bs_fonts_len;
 
@@ -288,18 +294,4 @@ bool bs_utf32_buffer_append(uint32_t *us, size_t l, bs_utf32_buffer_t *buf) {
 
 bool bs_utf32_buffer_append_single(uint32_t u, bs_utf32_buffer_t *buf) {
   return bs_utf32_buffer_append(&u, 1, buf);
-}
-
-void bs_bitmap_print(bs_bitmap_t bitmap) {
-  int h = bitmap.bs_bitmap_height;
-  int w = bitmap.bs_bitmap_width;
-
-  for(int y = 0; y < h; y++) {
-    for(int x = 0; x < w; x++) {
-      unsigned char pixel = bitmap.bs_bitmap[y * w + x];
-
-      fputs(pixel > 0x80 ? "█" : " ", stdout);
-    }
-    putchar('\n');
-  }
 }
