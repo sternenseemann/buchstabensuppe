@@ -8,7 +8,7 @@ all:
 	redo demo.exe libbuchstabensuppe.a
 
 clean:
-	rm -f *.o *.a *.exe
+	rm -f *.o *.a *.exe third_party/stb_truetype.o
 
 check:
 	redo test.exe
