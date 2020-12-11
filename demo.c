@@ -24,10 +24,22 @@ int main(int argc, char **argv) {
 
   if(ctx.bs_fonts_len > 0) {
     bs_utf32_buffer_t emoji = bs_decode_utf8(argv[1], strlen(argv[1]));
+    bs_bitmap_t bitmap = bs_bitmap_new(8, 16);
+    bs_cursor_t cursor = { 0, 0 };
 
-    bs_shape_grapheme(&ctx, emoji, 0, emoji.bs_utf32_buffer_len);
+    if(bs_render_grapheme_append(&ctx, &bitmap, &cursor,
+        emoji, 0, emoji.bs_utf32_buffer_len)) {
+      bs_bitmap_print(bitmap);
+      printf("Dimensions: (%d, %d)\n", bitmap.bs_bitmap_width,
+        bitmap.bs_bitmap_height);
+      printf("Cursor: (%d, %d)\n", cursor.bs_cursor_x,
+        cursor.bs_cursor_y);
+    } else {
+      puts("Rendering error");
+    }
 
     bs_utf32_buffer_free(&emoji);
+    bs_bitmap_free(&bitmap);
   }
 
   bs_context_free(&ctx);

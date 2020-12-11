@@ -11,12 +11,16 @@
 
 #include <buchstabensuppe.h>
 
-#define FONT_SCALE_MULTIPLIER 64
+#include "util.h"
+
+#define FONT_SCALE_MULTIPLIER 1
 
 #define LOG(...) \
   fprintf(stderr, "%s:%d: ", __FILE__, __LINE__); \
   fprintf(stderr, __VA_ARGS__); \
   fputc('\n', stderr);
+
+// context management
 
 void bs_context_init(bs_context_t *ctx) {
   ctx->bs_fonts = NULL;
@@ -38,7 +42,7 @@ void bs_context_free(bs_context_t *ctx) {
   ctx->bs_fonts_len = 0;
 }
 
-bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned int pixel_height) {
+bool bs_add_font(bs_context_t *ctx, const char *font_path, int font_index, unsigned int pixel_height) {
   struct stat finfo;
   memset(&finfo, 0, sizeof(struct stat));
 
@@ -139,17 +143,44 @@ bool bs_add_font(bs_context_t *ctx, char *font_path, int font_index, unsigned in
   return true;
 }
 
-void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, size_t len) {
+// font rendering
+
+bool bs_cursor_insert(bs_bitmap_t *dst, bs_cursor_t *cursor, int offset_x, int offset_y, int advance_x, int advance_y, bs_bitmap_t src) {
+  int required_width = cursor->bs_cursor_x + offset_x + src.bs_bitmap_width;
+  int required_height = cursor->bs_cursor_y + offset_y + src.bs_bitmap_height;
+
+  if(required_width > dst->bs_bitmap_width ||
+      required_height > dst->bs_bitmap_height) {
+    bool success = bs_bitmap_extend(dst,
+      MAX(required_width, dst->bs_bitmap_width),
+      MAX(required_height, dst->bs_bitmap_height),
+      0);
+
+    if(!success) {
+      return false;
+    }
+  }
+
+  bs_bitmap_copy(*dst, cursor->bs_cursor_x + offset_x,
+    cursor->bs_cursor_y + offset_y, src);
+
+  cursor->bs_cursor_x += advance_x;
+  cursor->bs_cursor_y += advance_y;
+
+  return true;
+}
+
+bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor_t *cursor, bs_utf32_buffer_t str, size_t offset, size_t len) {
   if(len == 0) {
-    return;
+    return false;
   }
 
   if(ctx->bs_fonts_len <= 0) {
-    return;
+    return false;
   }
 
   if(str.bs_utf32_buffer_len < offset + len) {
-    return;
+    return false;
   }
 
   bool have_glyphs = false;
@@ -165,7 +196,7 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
 
     if(hb_buffer_get_length(buf) <= 0) {
       hb_buffer_destroy(buf);
-      return;
+      return false;
     }
 
     hb_shape(ctx->bs_fonts[font_index].bs_font_hb, buf, NULL, 0);
@@ -175,7 +206,6 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
     hb_glyph_position_t *glyph_pos = hb_buffer_get_glyph_positions(buf, &glyph_count);
 
     // first check all glyphs wether they are in this font
-    // TODO: fall back per glyph possibly?
     have_glyphs = true;
     unsigned int missing_glyphs = 0;
     for(unsigned int i = 0; i < glyph_count; i++) {
@@ -189,33 +219,43 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
     LOG("Missing %u/%u glyphs", missing_glyphs, glyph_count);
 
     if(have_glyphs) {
-      int scale_x, scale_y;
-      hb_font_get_scale(ctx->bs_fonts[font_index].bs_font_hb, &scale_x, &scale_y);
-      LOG("scale_x: %d scale_y: %d", scale_x, scale_y);
+      stbtt_fontinfo *font = &ctx->bs_fonts[font_index].bs_font_stbtt;
+      float scale_y = stbtt_ScaleForPixelHeight(font,
+        ctx->bs_fonts[font_index].bs_font_pixel_height);
 
       for(unsigned int i = 0; i < glyph_count; i++) {
-        stbtt_fontinfo *font = &ctx->bs_fonts[font_index].bs_font_stbtt;
-        float scale_y = stbtt_ScaleForPixelHeight(font,
-          ctx->bs_fonts[font_index].bs_font_pixel_height);
+        int x_from_center, y_from_center;
 
-        int x_offset, y_offset;
+        bs_bitmap_t glyph;
+        glyph.bs_bitmap = stbtt_GetGlyphBitmap(font, scale_y, scale_y,
+          glyph_info[i].codepoint, &glyph.bs_bitmap_width, &glyph.bs_bitmap_height,
+          &x_from_center, &y_from_center);
 
-        // ascii render every glyph for now
-        bs_bitmap_t bitmap;
-        bitmap.bs_bitmap = stbtt_GetGlyphBitmap(font, 0, scale_y,
-          glyph_info[i].codepoint, &bitmap.bs_bitmap_width, &bitmap.bs_bitmap_height,
-          &x_offset, &y_offset);
-
-        if(bitmap.bs_bitmap_width != 0 || bitmap.bs_bitmap_height != 0) {
+        if(glyph.bs_bitmap_width != 0 && glyph.bs_bitmap_height != 0) {
           LOG("Cluster id: %u x: %d y: %d advance_x: %d advance_y: %d",
             glyph_info[i].cluster,
             glyph_pos[i].x_offset, glyph_pos[i].y_offset,
             glyph_pos[i].x_advance, glyph_pos[i].y_advance);
 
-          bs_bitmap_print(bitmap);
+          int offset_x = glyph_pos[i].x_offset + x_from_center;
+          int offset_y = glyph_pos[i].y_offset +
+            ctx->bs_fonts[font_index].bs_font_pixel_height + y_from_center;
+
+          bool result = bs_cursor_insert(target, cursor, offset_x, offset_y,
+            glyph_pos[i].x_advance, glyph_pos[i].y_advance,
+            glyph);
+
+          if(!result) {
+            bs_bitmap_free(&glyph);
+            hb_buffer_destroy(buf);
+            return false;
+          }
+        } else {
+          cursor->bs_cursor_x += glyph_pos[i].x_advance;
+          cursor->bs_cursor_y += glyph_pos[i].y_advance;
         }
 
-        free(bitmap.bs_bitmap);
+        bs_bitmap_free(&glyph);
       }
     }
 
@@ -223,7 +263,11 @@ void bs_shape_grapheme(bs_context_t *ctx, bs_utf32_buffer_t str, size_t offset, 
 
     font_index++;
   }
+
+  return have_glyphs;
 }
+
+// buffer implementation
 
 bs_utf32_buffer_t bs_decode_utf8(const char *s, size_t l) {
   bs_utf32_buffer_t buf = bs_utf32_buffer_new(l);

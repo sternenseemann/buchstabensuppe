@@ -48,10 +48,19 @@ void bs_context_init(bs_context_t *);
 
 void bs_context_free(bs_context_t *);
 
-bool bs_add_font(bs_context_t *, char *, int, unsigned int);
+bool bs_add_font(bs_context_t *, const char *, int, unsigned int);
 
-void bs_shape_grapheme(bs_context_t *, bs_utf32_buffer_t, size_t, size_t);
+typedef struct bs_cursor {
+  int bs_cursor_x;
+  int bs_cursor_y;
+} bs_cursor_t;
 
-void bs_shape_utf8_string(bs_context_t *, const char *, size_t);
+bs_bitmap_t bs_render_utf8_string(bs_context_t *, const char *, size_t);
+
+bool bs_render_grapheme_append(bs_context_t *, bs_bitmap_t *, bs_cursor_t *,
+  bs_utf32_buffer_t, size_t, size_t);
+
+bool bs_render_utf8_string_append(bs_context_t *, bs_bitmap_t *, bs_cursor_t *,
+  const char *, size_t);
 
 #endif
