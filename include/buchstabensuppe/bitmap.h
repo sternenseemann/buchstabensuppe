@@ -1,14 +1,16 @@
 #ifndef BUCHSTABENSUPPE_BITMAP_H
 #define BUCHSTABENSUPPE_BITMAP_H
 
+#include <stdbool.h>
+
 // bitmap api
 
 typedef struct bs_bitmap {
   unsigned char *bs_bitmap;
 
+  int            bs_bitmap_height;
+  int            bs_bitmap_width;
   // TODO make unsigned
-  int   bs_bitmap_height;
-  int   bs_bitmap_width;
 } bs_bitmap_t;
 
 typedef struct bs_bm_view {
@@ -19,8 +21,18 @@ typedef struct bs_bm_view {
   unsigned int bs_view_height;
 } bs_view_t;
 
-void bs_bitmap_print(bs_bitmap_t);
+bs_bitmap_t bs_bitmap_new(int, int);
+
+bool bs_bitmap_extend(bs_bitmap_t *, int, int, unsigned char);
+
+void bs_bitmap_free(bs_bitmap_t *);
 
 void bs_bitmap_set(bs_bitmap_t, int, int, unsigned char);
+
+unsigned char bs_bitmap_get(bs_bitmap_t, int, int);
+
+void bs_bitmap_copy(bs_bitmap_t, int, int, bs_bitmap_t);
+
+void bs_bitmap_print(bs_bitmap_t);
 
 #endif
