@@ -1,5 +1,19 @@
 # buchstabensuppe
 
+```
+ █             
+ █             
+ █             
+ █ ███    ████ 
+ ██   █  █    █
+ █    █  █     
+ █    █   ██   
+ █    █     ██ 
+ █    █       █
+ ██   █  █    █
+ █ ███    ████ 
+```
+
 > at least it's better than PIL.ImageFont
 
 toy font rendering for low pixelcount high contrast displays,
