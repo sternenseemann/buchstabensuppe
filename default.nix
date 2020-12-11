@@ -1,4 +1,4 @@
-{ pkgs ? import /home/lukas/src/nix/nixpkgs {} }:
+{ pkgs ? import <nixpkgs> { } }:
 
 let
   gi = pkgs.nix-gitignore;
