@@ -19,6 +19,13 @@
 toy font rendering for low pixelcount high contrast displays,
 i. e. [openlab's flipdot display](https://wiki.openlab-augsburg.de/Flipdots).
 
+## features
+
+* supports [text shaping](https://harfbuzz.github.io/what-is-harfbuzz.html#what-is-text-shaping)
+  via harfbuzz
+* per grapheme cluster font fallback
+* planned: grayscale and hard b/w support
+
 ## building
 
 requirements:
