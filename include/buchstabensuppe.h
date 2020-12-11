@@ -60,7 +60,7 @@ bs_bitmap_t bs_render_utf8_string(bs_context_t *, const char *, size_t);
 bool bs_render_grapheme_append(bs_context_t *, bs_bitmap_t *, bs_cursor_t *,
   bs_utf32_buffer_t, size_t, size_t);
 
-bool bs_render_utf8_string_append(bs_context_t *, bs_bitmap_t *, bs_cursor_t *,
-  const char *, size_t);
+bool bs_render_utf32_string_append(bs_context_t *, bs_bitmap_t *,
+  bs_cursor_t *, bs_utf32_buffer_t);
 
 #endif

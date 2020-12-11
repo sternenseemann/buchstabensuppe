@@ -170,6 +170,47 @@ bool bs_cursor_insert(bs_bitmap_t *dst, bs_cursor_t *cursor, int offset_x, int o
   return true;
 }
 
+bs_bitmap_t bs_render_utf8_string(bs_context_t *ctx, const char *s, size_t l) {
+  bs_bitmap_t b = { NULL, 0, 0 };
+  bs_cursor_t cursor = { 0, 0 };
+
+  if(l > 0) {
+    bs_utf32_buffer_t buf = bs_decode_utf8(s, l);
+
+    if(errno == 0) {
+      (void) bs_render_utf32_string_append(ctx, &b, &cursor, buf);
+    }
+  }
+
+  return b;
+}
+
+bool bs_render_utf32_string_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor_t *cursor, bs_utf32_buffer_t str) {
+  utf8proc_int32_t state = 0;
+  size_t start_index = 0;
+  size_t len = 0;
+
+  for(size_t i = 0; i < str.bs_utf32_buffer_len; i++) {
+    len++;
+
+    // end of string or grapheme boundary following
+    bool boundary = (i + 1) < str.bs_utf32_buffer_len ||
+        utf8proc_grapheme_break_stateful(str.bs_utf32_buffer[i],
+            str.bs_utf32_buffer[i + 1], &state);
+
+    if(boundary) {
+      if(!bs_render_grapheme_append(ctx, target, cursor, str, start_index, len)) {
+        return false;
+      }
+
+      len = 0;
+      start_index = i + 1;
+    }
+  }
+
+  return true;
+}
+
 bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor_t *cursor, bs_utf32_buffer_t str, size_t offset, size_t len) {
   if(len == 0) {
     return false;
