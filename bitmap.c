@@ -12,6 +12,9 @@ bool bs_bitmap_extend(bs_bitmap_t *b, int new_w, int new_h, unsigned char init) 
   int diff_x = MAX(new_w - b->bs_bitmap_width, 0);
   int diff_y = MAX(new_h - b->bs_bitmap_height, 0);
 
+  new_w = MAX(new_w, b->bs_bitmap_width);
+  new_h = MAX(new_h, b->bs_bitmap_height);
+
   if(diff_y == 0 && diff_x == 0) {
     return true;
   }
