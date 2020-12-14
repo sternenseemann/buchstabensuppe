@@ -45,11 +45,11 @@ typedef struct bs_bm_view {
  *
  * Creates a new bitmap with the given width and height.
  * The allocated bitmap is then initialized to hold the
- * value 0 for every pixel.
+ * value `initial` for every pixel.
  *
  * The caller is responsible for freeing the returned bitmap.
  */
-bs_bitmap_t bs_bitmap_new(int width, int height);
+bs_bitmap_t bs_bitmap_new(int width, int height, unsigned char inital);
 
 /*!
  * @brief Free a bitmap's buffer

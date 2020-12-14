@@ -71,11 +71,11 @@ bool bs_bitmap_extend(bs_bitmap_t *b, int new_w, int new_h, unsigned char init) 
   return false;
 }
 
-bs_bitmap_t bs_bitmap_new(int w, int h) {
+bs_bitmap_t bs_bitmap_new(int w, int h, unsigned char init) {
   bs_bitmap_t b = { NULL, 0, 0 };
 
   if(w > 0 && h > 0) {
-    (void) bs_bitmap_extend(&b, w, h, 0);
+    (void) bs_bitmap_extend(&b, w, h, init);
   }
 
   return b;
