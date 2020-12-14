@@ -197,7 +197,7 @@ bool bs_render_utf32_string_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cu
     len++;
 
     // end of string or grapheme boundary following
-    bool boundary = (i + 1) < str.bs_utf32_buffer_len ||
+    bool boundary = (i + 1) >= str.bs_utf32_buffer_len ||
         utf8proc_grapheme_break_stateful(str.bs_utf32_buffer[i],
             str.bs_utf32_buffer[i + 1], &state);
 
