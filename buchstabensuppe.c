@@ -1,4 +1,5 @@
 #include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #include <string.h>
 #include <sys/types.h>
@@ -265,22 +266,73 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
         ctx->bs_fonts[font_index].bs_font_pixel_height);
 
       for(unsigned int i = 0; i < glyph_count; i++) {
-        int x_from_center, y_from_center;
+        int abyss; // tmp var for unused values
+        int tt_offset_x, tt_offset_y;
 
         bs_bitmap_t glyph;
         glyph.bs_bitmap = stbtt_GetGlyphBitmap(font, scale_y, scale_y,
           glyph_info[i].codepoint, &glyph.bs_bitmap_width, &glyph.bs_bitmap_height,
-          &x_from_center, &y_from_center);
+          &tt_offset_x, &tt_offset_y);
 
         if(glyph.bs_bitmap_width != 0 && glyph.bs_bitmap_height != 0) {
-          LOG("Cluster id: %u x: %d y: %d advance_x: %d advance_y: %d",
-            glyph_info[i].cluster,
+          LOG("Offset: HarfBuzz (%d,%d) TrueType (%d, %d)",
             glyph_pos[i].x_offset, glyph_pos[i].y_offset,
-            glyph_pos[i].x_advance, glyph_pos[i].y_advance);
+            tt_offset_x, tt_offset_y);
+          LOG("Bitmap Size:                    (%d,  %d)", glyph.bs_bitmap_width,
+              glyph.bs_bitmap_height);
 
-          int offset_x = glyph_pos[i].x_offset + x_from_center;
-          int offset_y = glyph_pos[i].y_offset +
-            ctx->bs_fonts[font_index].bs_font_pixel_height + y_from_center;
+          /*                     +--- cursor position
+           *                     v
+           *                     +----------------+                   --+
+           *                     |                |                     | p
+           *                     |                |                     | i
+           *                     |                |                     | x
+           *                     |                |                     | e
+           *                     |                |                     | l
+           *                     |                |                     | _
+           *                     |                |                     | h
+           *                     |     +----------+   --+               | e
+           *                     |     |          |     | |             | i
+           *                     |     |          |     | | tt_offset_y | g
+           *                     |     |  glyph   |     | |             | h
+           * tt_offset_x --------+--+  |          |     | |             | t
+           *                     |  |  |          |     | |             |
+           *                     |  v  |          |     | v             |
+           *               +--   +-----+ - -  - - +   --+               |
+           * baseline_y0 | |     |     |          |                     |
+           *             v |     |     |          |                     |
+           *               +--   +-----+----------+                  ---+
+           *
+           * This means the top right corner of the
+           * glyph bitmap relative to the cursor position
+           * is:
+           *
+           *    x: bbox_x0
+           *    y: pixel_height - baseline_y0 + bbox_y0
+           *
+           * Also refer to the stb_truetype documentation
+           * for this, especially
+           *
+           *   * stbtt_GetFontBoundingBox
+           *   * stbtt_GetCodepointBitmapBox
+           *   * stbtt_GetCodepointBitmap
+           *   * DETAILED USAGE → Baseline
+           *   * DETAILED USAGE → Displaying a character
+           *     (note however that in the bitmap bounding
+           *     box the coordinate direction is reversed
+           *     and thus “above” means “below”)
+           */
+
+          int baseline_y0;
+
+          stbtt_GetFontBoundingBox(font, &abyss, &baseline_y0, &abyss, &abyss);
+          baseline_y0 = (-1) * round(baseline_y0 * scale_y);
+
+          int offset_x = glyph_pos[i].x_offset + tt_offset_x;
+          int offset_y = glyph_pos[i].y_offset + tt_offset_y - baseline_y0
+            + ctx->bs_fonts[font_index].bs_font_pixel_height;
+
+          LOG("Computed offset: (%d, %d)", offset_x, offset_y);
 
           if(ctx->bs_rendering_flags & BS_RENDER_BINARY) {
             for(int y = 0; y < glyph.bs_bitmap_height; y++) {
