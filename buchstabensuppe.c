@@ -307,8 +307,8 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
            * glyph bitmap relative to the cursor position
            * is:
            *
-           *    x: bbox_x0
-           *    y: pixel_height - baseline_y0 + bbox_y0
+           *    x: cursor_x + bbox_x0
+           *    y: cursor_y + pixel_height - baseline_y0 + bbox_y0
            *
            * Also refer to the stb_truetype documentation
            * for this, especially
