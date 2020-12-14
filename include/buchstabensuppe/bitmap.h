@@ -65,9 +65,9 @@ void bs_bitmap_free(bs_bitmap_t *bitmap);
 /*!
  * @brief Increase the size of a bitmap
  *
- * Resizes the bitmap to a new size which must be bigger than
- * the old one on at least one axis. The newly initialized
- * value is then intialized with the given value.
+ * Resizes the bitmap to a new size, but will only increase
+ * its size. The newly allocated space is then intialized
+ * with the given value.
  */
 bool bs_bitmap_extend(bs_bitmap_t *bitmap, int new_width,
   int new_height, unsigned char initial_value);
