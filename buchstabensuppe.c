@@ -337,12 +337,7 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
           LOG("Computed offset: (%d, %d)", offset_x, offset_y);
 
           if(ctx->bs_rendering_flags & BS_RENDER_BINARY) {
-            for(int y = 0; y < glyph.bs_bitmap_height; y++) {
-              for(int x = 0; x < glyph.bs_bitmap_width; x++) {
-                glyph.bs_bitmap[y * glyph.bs_bitmap_width + x] =
-                  glyph.bs_bitmap[y * glyph.bs_bitmap_width + x] >= 0x80 ? 1 : 0;
-              }
-            }
+            bs_bitmap_map(glyph, &bs_pixel_to_binary);
           }
 
           bool result = bs_cursor_insert(target, cursor, offset_x, offset_y,

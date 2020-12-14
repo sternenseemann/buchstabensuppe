@@ -108,4 +108,47 @@ void bs_bitmap_copy(bs_bitmap_t destination, int offset_x,
  */
 void bs_bitmap_print(bs_bitmap_t bitmap, bool binary_image);
 
+/*!
+ * @name Bitmap Processing
+ * @{
+ */
+
+/*!
+ * @brief Map a bitmap
+ *
+ * Calls the provided function on every pixel of the bitmap
+ * and sets it to the returned value.
+ */
+void bs_bitmap_map(bs_bitmap_t bitmap, unsigned char (*fun)(unsigned char));
+
+/*!
+ * @brief Invert a binary pixel
+ *
+ * To be used with bs_bitmap_map().
+ */
+unsigned char bs_pixel_invert_binary(unsigned char);
+
+/*!
+ * @brief Invert a grayscale pixel
+ *
+ * To be used with bs_bitmap_map().
+ */
+unsigned char bs_pixel_invert_grayscale(unsigned char);
+
+/*!
+ * @brief Convert a grayscale pixel to binary
+ *
+ * To be used with bs_bitmap_map().
+ */
+unsigned char bs_pixel_to_binary(unsigned char);
+
+/*!
+ * @brief convert a binary pixel to grayscale
+ *
+ * To be used with bs_bitmap_map().
+ */
+unsigned char bs_pixel_to_grayscale(unsigned char);
+
+//! @}
+
 #endif

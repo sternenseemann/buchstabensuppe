@@ -152,3 +152,28 @@ void bs_bitmap_print(bs_bitmap_t bitmap, bool binary) {
     putchar('\n');
   }
 }
+
+unsigned char bs_pixel_invert_binary(unsigned char p) {
+  return !p;
+}
+
+unsigned char bs_pixel_invert_grayscale(unsigned char p) {
+  return (0xff - p);
+}
+
+unsigned char bs_pixel_to_binary(unsigned char p) {
+  return (p >= 0x80);
+}
+
+unsigned char bs_pixel_to_grayscale(unsigned char p) {
+  return (p * 0xff);
+}
+
+void bs_bitmap_map(bs_bitmap_t bitmap, unsigned char (*fun)(unsigned char)) {
+  for(int y = 0; y < bitmap.bs_bitmap_height; y++) {
+    for(int x = 0; x < bitmap.bs_bitmap_width; x++) {
+      bitmap.bs_bitmap[y * bitmap.bs_bitmap_width + x] =
+        (*fun)(bitmap.bs_bitmap[y * bitmap.bs_bitmap_width + x]);
+    }
+  }
+}
