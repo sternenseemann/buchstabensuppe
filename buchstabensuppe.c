@@ -181,6 +181,8 @@ bs_bitmap_t bs_render_utf8_string(bs_context_t *ctx, const char *s, size_t l) {
     if(errno == 0) {
       (void) bs_render_utf32_string_append(ctx, &b, &cursor, buf);
     }
+
+    bs_utf32_buffer_free(&buf);
   }
 
   return b;
