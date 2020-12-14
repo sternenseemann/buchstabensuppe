@@ -12,8 +12,6 @@
 
 #include <buchstabensuppe.h>
 
-#include "util.h"
-
 #define FONT_SCALE_MULTIPLIER 1
 
 #define LOG(...) \
@@ -152,10 +150,7 @@ bool bs_cursor_insert(bs_bitmap_t *dst, bs_cursor_t *cursor, int offset_x, int o
 
   if(required_width > dst->bs_bitmap_width ||
       required_height > dst->bs_bitmap_height) {
-    bool success = bs_bitmap_extend(dst,
-      MAX(required_width, dst->bs_bitmap_width),
-      MAX(required_height, dst->bs_bitmap_height),
-      0);
+    bool success = bs_bitmap_extend(dst, required_width, required_height, 0);
 
     if(!success) {
       return false;

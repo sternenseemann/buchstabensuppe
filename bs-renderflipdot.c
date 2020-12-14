@@ -10,8 +10,6 @@
 
 #include <buchstabensuppe.h>
 
-#include "util.h"
-
 #define DEFAULT_FONT_SIZE 16
 
 #define FLIPDOT_WIDTH 80
@@ -174,10 +172,7 @@ int main(int argc, char **argv) {
 
   if(!dry_run && (bitmap.bs_bitmap_width < FLIPDOT_WIDTH ||
       bitmap.bs_bitmap_height < FLIPDOT_HEIGHT)) {
-    bs_bitmap_extend(&bitmap,
-      MAX(bitmap.bs_bitmap_width, FLIPDOT_WIDTH),
-      MAX(bitmap.bs_bitmap_height, FLIPDOT_HEIGHT),
-      invert);
+    bs_bitmap_extend(&bitmap, FLIPDOT_WIDTH, FLIPDOT_HEIGHT, invert);
   }
 
   bs_bitmap_print(bitmap, true);

@@ -9,8 +9,8 @@
 #include "util.h"
 
 bool bs_bitmap_extend(bs_bitmap_t *b, int new_w, int new_h, unsigned char init) {
-  int diff_x = new_w - b->bs_bitmap_width;
-  int diff_y = new_h - b->bs_bitmap_height;
+  int diff_x = MAX(new_w - b->bs_bitmap_width, 0);
+  int diff_y = MAX(new_h - b->bs_bitmap_height, 0);
 
   if(diff_y == 0 && diff_x == 0) {
     return true;
@@ -20,13 +20,6 @@ bool bs_bitmap_extend(bs_bitmap_t *b, int new_w, int new_h, unsigned char init) 
       (b->bs_bitmap_width == 0 && diff_x == 0)) {
     b->bs_bitmap_width = new_w;
     b->bs_bitmap_height = new_h;
-  }
-
-  if(diff_y < 0 || diff_x < 0) {
-    // don't perform downsizing because we don't keep track of
-    // capacity and we can use views for such tasks
-    errno = EINVAL;
-    return false;
   }
 
   // perform y only resize if possible because it doesn't require copying
