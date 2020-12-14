@@ -153,6 +153,43 @@ void bs_bitmap_print(bs_bitmap_t bitmap, bool binary) {
   }
 }
 
+uint8_t *bs_view_bitarray(bs_view_t view, size_t *size) {
+  int view_max_y = view.bs_view_offset_y + view.bs_view_height;
+  int view_max_x = view.bs_view_offset_x + view.bs_view_width;
+
+  *size = ceil((view.bs_view_height * view.bs_view_width) / 8);
+  uint8_t *array = malloc(sizeof(uint8_t) * (*size));
+  size_t array_pos = 0;
+
+  if(array == NULL) {
+    *size = 0;
+    return NULL;
+  }
+
+  for(int y = view.bs_view_offset_y; y < view_max_y; y++) {
+    for(int x = view.bs_view_offset_x; x < view_max_x; x = x + 8) {
+      uint8_t byte = 0;
+      int max_i = MIN(8, view_max_x - x);
+
+      for(int i = 0; i < max_i; i++) {
+        // reduce pixel to a single bit works regardless of monospace and
+        // grayscale bitmaps -- however grayscale bitmaps are not converted
+        // on the fly TODO
+        uint8_t pixel_val = bs_bitmap_get(view.bs_view_bitmap, x + i, y) > 0;
+        byte |= pixel_val << (7 - i);
+      }
+
+      array[array_pos++] = byte;
+
+      if(array_pos >= *size) {
+        return array;
+      }
+    }
+  }
+
+  return array;
+}
+
 unsigned char bs_pixel_invert_binary(unsigned char p) {
   return !p;
 }

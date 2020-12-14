@@ -6,6 +6,7 @@
 #define BUCHSTABENSUPPE_BITMAP_H
 
 #include <stdbool.h>
+#include <stdint.h>
 
 /*!
  * @brief 8-bit bitmap
@@ -107,6 +108,26 @@ void bs_bitmap_copy(bs_bitmap_t destination, int offset_x,
  * pixels. Else 1 is “white”, 0 is “black”.
  */
 void bs_bitmap_print(bs_bitmap_t bitmap, bool binary_image);
+
+/*
+ * @brief Compact a binary bitmap
+ *
+ * This converts a binary bitmap into a more compact
+ * representation which every byte stores 8 pixels
+ * instead of just 1. The highest bit represents the
+ * pixel that comes first in the bitmap.
+ *
+ * The resulting format is precisely what the
+ * [Flidpot UDP protocol](https://wiki.openlab-augsburg.de/Flipdots#per-udp-schnittstelle)
+ * requires.
+ *
+ * `view` describes the bitmap to be used and the area
+ * of it. `size` will hold the length of the returned array.
+ *
+ * On error `NULL` is returned and `size` is 0. The allocated
+ * memory must be freed by the caller.
+ */
+uint8_t *bs_view_bitarray(bs_view_t view, size_t *size);
 
 /*!
  * @name Bitmap Processing

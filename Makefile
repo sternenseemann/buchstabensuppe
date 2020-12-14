@@ -5,7 +5,7 @@ INCDIR ?= $(PREFIX)/include
 
 .PHONY: all clean install check
 all:
-	redo demo.exe libbuchstabensuppe.a
+	redo bs-renderflipdot.exe demo.exe libbuchstabensuppe.a
 
 clean:
 	rm -f *.o *.a *.exe third_party/stb_truetype.o
