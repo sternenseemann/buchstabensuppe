@@ -14,7 +14,7 @@
  █ ███    ████ 
 ```
 
-> at least it's better than PIL.ImageFont
+> at least better than PIL.ImageFont
 
 toy font rendering for low pixelcount high contrast displays,
 i. e. [openlab's flipdot display](https://wiki.openlab-augsburg.de/Flipdots).
@@ -77,6 +77,38 @@ $ ./bs-renderflipdot.exe -f fonts/unifont.ttf -f fonts/unifont_upper.ttf -n "Gre
   ███ █  █        ████    ████      ██    █████  █    █  █    █   ████                ███   
                                                          █    █                             
                                                           ████                              
+```
+
+## flipdot interaction
+
+![An example where buchstabensuppe does an admirable job rendering a string onto a simulated flipdot display](doc/flipdot-render.png)
+
+the picture above shows buchstabensuppe being used to render text
+onto a simulated flipdot display. take notice especially of the following:
+
+* fallback fonts are supported: the emoji is not found in `unifont.ttf`,
+  but rendered from `unifont_upper.ttf`
+* correct text shaping is supported (as far as the font supports it):
+  g̈ which consists of two codepoints is rendered as a combined cluster
+  consisting of two glyphs.
+
+[bs-renderflipdot.c](./bs-renderflipdot.c) is a simple example showing
+how to interact with a flipdot display. mainly it involves:
+
+* rendering a string to a bitmap using `bs_render_utf8_string`
+* making sure that the dimensions of the display and the image
+  match with `bs_bitmap_extend`
+* processing the resulting bitmap using `bs_bitmap_map`
+* producing a compacted bitmap array for the display
+  using `bs_view_bitarray` ready to sent via UDP
+
+you can also play around with its cli: the following command
+renders “Hello World” black on white using GNU Unifont onto
+a flipdot display (or simulator) running on `localhost:2323`.
+See `./bs-renderflipdot.exe -?` for more usage details.
+
+```
+./bs-renderflipdot.exe -f /path/to/unifont.ttf -f /path/to/unifont_upper.ttf -i "Hello World"
 ```
 
 ## caveats
