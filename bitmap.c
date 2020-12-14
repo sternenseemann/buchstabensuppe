@@ -137,7 +137,7 @@ void bs_bitmap_copy(bs_bitmap_t dst, int offset_x, int offset_y, bs_bitmap_t src
   }
 }
 
-void bs_bitmap_print(bs_bitmap_t bitmap) {
+void bs_bitmap_print(bs_bitmap_t bitmap, bool binary) {
   int h = bitmap.bs_bitmap_height;
   int w = bitmap.bs_bitmap_width;
 
@@ -145,7 +145,9 @@ void bs_bitmap_print(bs_bitmap_t bitmap) {
     for(int x = 0; x < w; x++) {
       unsigned char pixel = bitmap.bs_bitmap[y * w + x];
 
-      fputs(pixel > 0x80 ? "█" : " ", stdout);
+      bool white = binary ? pixel : pixel > 0x80;
+
+      fputs(white ? "█" : " ", stdout);
     }
     putchar('\n');
   }

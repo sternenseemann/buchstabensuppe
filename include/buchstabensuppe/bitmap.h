@@ -101,9 +101,11 @@ void bs_bitmap_copy(bs_bitmap_t destination, int offset_x,
  * @brief Print a representation of a bitmap to stdout
  *
  * Uses the unicode block character to render a representation
- * of the bitmap. All values greater than 0x80 are considered
- * a “white” pixel, all below a “black” pixel.
+ * of the bitmap. If `binary_image` is false, the image is
+ * considered as a grayscale image and all values greater than
+ * 0x80 are rendered as “white” pixels, all below as “black”
+ * pixels. Else 1 is “white”, 0 is “black”.
  */
-void bs_bitmap_print(bs_bitmap_t bitmap);
+void bs_bitmap_print(bs_bitmap_t bitmap, bool binary_image);
 
 #endif

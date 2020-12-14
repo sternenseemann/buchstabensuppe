@@ -25,7 +25,7 @@
 void bs_context_init(bs_context_t *ctx) {
   ctx->bs_fonts = NULL;
   ctx->bs_fonts_len = 0;
-  ctx->bs_grayscale = true;
+  ctx->bs_rendering_flags = 0;
 }
 
 void bs_context_free(bs_context_t *ctx) {
@@ -281,6 +281,15 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
           int offset_x = glyph_pos[i].x_offset + x_from_center;
           int offset_y = glyph_pos[i].y_offset +
             ctx->bs_fonts[font_index].bs_font_pixel_height + y_from_center;
+
+          if(ctx->bs_rendering_flags & BS_RENDER_BINARY) {
+            for(int y = 0; y < glyph.bs_bitmap_height; y++) {
+              for(int x = 0; x < glyph.bs_bitmap_width; x++) {
+                glyph.bs_bitmap[y * glyph.bs_bitmap_width + x] =
+                  glyph.bs_bitmap[y * glyph.bs_bitmap_width + x] >= 0x80 ? 1 : 0;
+              }
+            }
+          }
 
           bool result = bs_cursor_insert(target, cursor, offset_x, offset_y,
             glyph_pos[i].x_advance, glyph_pos[i].y_advance,

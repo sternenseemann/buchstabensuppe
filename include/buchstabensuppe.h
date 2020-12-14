@@ -37,11 +37,15 @@ typedef struct bs_font {
   unsigned int    bs_font_pixel_height;
 } bs_font_t;
 
+enum bs_rendering_flag {
+  BS_RENDER_BINARY    = 0x01,
+};
+
 typedef struct bs_context {
   bs_font_t  *bs_fonts;
   size_t      bs_fonts_len;
 
-  bool        bs_grayscale;
+  int         bs_rendering_flags;
 } bs_context_t;
 
 void bs_context_init(bs_context_t *);
