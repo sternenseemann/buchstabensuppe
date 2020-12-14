@@ -42,7 +42,7 @@ requirements:
 $ redo libbuchstabensuppe.a
 
 # demo binary
-$ redo demo.exe
+$ redo bs-renderflipdot.exe
 
 # tests
 $ redo test.exe && ./test.exe
@@ -50,21 +50,17 @@ $ redo test.exe && ./test.exe
 
 alternatively you can just run `nix-build`
 
-## demo binary
+## demo
 
-`./demo.exe` (or `./result/bin/buchstabensuppe-demo` if you use nix)
-renders a string using `libbuchstabensuppe` and prints a preview
-to `stdout`. it supports usual opentype and truetype fonts, but
-won't support e. g. colored fonts.
+if you want to play around with the font rendering in binary
+mode you can use the dry run mode of the supplied `./bs-renderflipdot.exe`
+(or `./result/bin/bs-renderflipdot` if you use nix) binary.
 
-good results for the rendering target (16px font size, no grayscale)
-can be achieved with gnu unifont:
+Run `./bs-renderflipdot.exe -?` for usage instructions and don't forget `-n`
+for dry running!
 
 ```
-$ ./demo.exe "Greetings ❣️" ./fonts/*.ttf 2> /dev/null
-Added font ./fonts/unifont.ttf
-Added font ./fonts/unifont_upper.ttf
-Font count: 2
+$ ./bs-renderflipdot.exe -f fonts/unifont.ttf -f fonts/unifont_upper.ttf -n "Greetings ❣️" 2>/dev/null
                                                                                             
                                                                                     ███ ███ 
                                                                                    █████████
@@ -81,7 +77,6 @@ Font count: 2
   ███ █  █        ████    ████      ██    █████  █    █  █    █   ████                ███   
                                                          █    █                             
                                                           ████                              
-Dimensions: (92, 16)
 ```
 
 ## caveats
