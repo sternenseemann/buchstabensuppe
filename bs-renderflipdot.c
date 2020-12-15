@@ -32,7 +32,7 @@ void print_usage(const char *name) {
   for(size_t i = 0; i < name_len; i++) {
     fputc(' ', stderr);
   }
-  fputs(" [-h HOST] [-p PORT] [-W WIDTH] [-H HEIGHT] TEXT\n", stderr);
+  fputs(" [-4|-6] [-h HOST] [-p PORT] [-W WIDTH] [-H HEIGHT] TEXT\n", stderr);
 
   fputs(name, stderr);
   fputs(" -?\n", stderr);
@@ -47,19 +47,22 @@ void print_usage(const char *name) {
     "  -p    port of the flipdots to use (default: %s)\n"
     "  -W    width of the target flipdot display (default: %d)\n"
     "  -H    height of the target flipdot display (default: %d)\n"
+    "  -4    only use IPv4 for connecting\n"
+    "  -6    only use IPv6 for connecting\n"
     "  -?    display this help screen\n",
     DEFAULT_FONT_SIZE, DEFAULT_HOST, DEFAULT_PORT,
     DEFAULT_FLIPDOT_WIDTH, DEFAULT_FLIPDOT_HEIGHT);
 }
 
-bool send_bitarray(const char *host, const char *port, uint8_t *bits, ssize_t bits_size, const char *progname) {
+bool send_bitarray(const char *host, const char *port, int family, uint8_t *bits, ssize_t bits_size, const char *progname) {
   struct addrinfo *addrs;
   struct addrinfo hints;
 
+  bool result = false;
+
   memset(&hints, 0, sizeof(hints));
 
-  // TODO: seems like flipdot impls are v4 only
-  hints.ai_family = AF_INET;
+  hints.ai_family = family;
   hints.ai_socktype = SOCK_DGRAM;
   hints.ai_flags = AI_NUMERICSERV;
 
@@ -68,22 +71,16 @@ bool send_bitarray(const char *host, const char *port, uint8_t *bits, ssize_t bi
     return false;
   }
 
-  if(addrs == NULL) {
-    return false;
-  }
-
   int sockfd = socket(addrs->ai_family, SOCK_DGRAM, IPPROTO_UDP);
 
   if(sockfd < 0) {
     print_error(progname, "could not create socket");
-    freeaddrinfo(addrs);
-    return false;
+  } else {
+    result = sendto(sockfd, bits, bits_size, 0,
+        addrs->ai_addr, addrs->ai_addrlen) == bits_size;
+
+    close(sockfd);
   }
-
-  bool result = sendto(sockfd, bits, bits_size, 0,
-    addrs->ai_addr, addrs->ai_addrlen) == bits_size;
-
-  close(sockfd);
 
   freeaddrinfo(addrs);
 
@@ -99,6 +96,7 @@ int main(int argc, char **argv) {
   int flipdot_height = DEFAULT_FLIPDOT_HEIGHT;
   bool dry_run = false;
   bool invert = false;
+  int ip_family = AF_UNSPEC;
 
   int opt;
   int fontcount = 0;
@@ -110,8 +108,14 @@ int main(int argc, char **argv) {
 
   bool parse_error = false;
 
-  while(!parse_error && (opt = getopt(argc, argv, "inh:p:s:f:?W:H:")) != -1) {
+  while(!parse_error && (opt = getopt(argc, argv, "46inh:p:s:f:?W:H:")) != -1) {
     switch(opt) {
+      case '4':
+        ip_family = AF_INET;
+        break;
+      case '6':
+        ip_family = AF_INET6;
+        break;
       case 'i':
         invert = true;
         break;
@@ -225,7 +229,7 @@ int main(int argc, char **argv) {
     uint8_t *bits = bs_view_bitarray(view, &size);
 
     if(size > 0) {
-      if(!send_bitarray(host, port, bits, (ssize_t) size, argv[0])) {
+      if(!send_bitarray(host, port, ip_family, bits, (ssize_t) size, argv[0])) {
         status = 1;
       }
     } else {

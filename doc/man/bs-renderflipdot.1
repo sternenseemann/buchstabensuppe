@@ -15,6 +15,8 @@
 .Op Fl H Ar height
 .Op Fl h Ar host
 .Op Fl p Ar port
+.Op Fl 4
+.Op Fl 6
 .Ar text
 .Sh DESCRIPTION
 .Nm
@@ -65,6 +67,13 @@ Port of the target flipdot display. Only relevant if
 is not given,
 .Sy 2323
 is the default value.
+.It Fl 4
+Use IPv4 address of target host if any.
+Otherwise the one returned first by
+.Xr getaddrinfo 3
+is used.
+.It Fl 6
+Use IPv6 address of target host if any.
 .It Fl ?
 Show usage information.
 .El
