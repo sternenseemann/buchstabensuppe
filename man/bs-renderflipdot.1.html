@@ -34,6 +34,7 @@
       [<code class="Fl">-H</code> <var class="Ar">height</var>]
       [<code class="Fl">-h</code> <var class="Ar">host</var>]
       [<code class="Fl">-p</code> <var class="Ar">port</var>]
+      [<code class="Fl">-4</code>] [<code class="Fl">-6</code>]
       <var class="Ar">text</var></td>
   </tr>
 </table>
@@ -84,6 +85,11 @@
   <dd>Port of the target flipdot display. Only relevant if
       <code class="Fl">-n</code> is not given, <b class="Sy">2323</b> is the
       default value.</dd>
+  <dt><a class="permalink" href="#4"><code class="Fl" id="4">-4</code></a></dt>
+  <dd>Use IPv4 address of target host if any. Otherwise the one returned first
+      by <a class="Xr">getaddrinfo(3)</a> is used.</dd>
+  <dt><a class="permalink" href="#6"><code class="Fl" id="6">-6</code></a></dt>
+  <dd>Use IPv6 address of target host if any.</dd>
   <dt><code class="Fl">-</code>?</dt>
   <dd>Show usage information.</dd>
 </dl>
