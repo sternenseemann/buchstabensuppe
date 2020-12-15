@@ -362,7 +362,7 @@ a:link, a:visited {
   color: #3e7eff;
 }
 
-header, main, footer, table.head, table.foot, div.manual-text {
+header, main, footer {
   margin-top: 0;
   margin-bottom: 0;
   margin-left: auto;
