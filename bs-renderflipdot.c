@@ -27,7 +27,7 @@ void print_usage(const char *name) {
   size_t name_len = strlen(name);
 
   fputs(name, stderr);
-  fputs(" [-s FONTSIZE] [-f FONTPATH [-f FONTPATH ...]] [-i] [-n]\n", stderr);
+  fputs(" [-s FONTSIZE] -f FONTPATH [-f FONTPATH ...] [-i] [-n]\n", stderr);
 
   for(size_t i = 0; i < name_len; i++) {
     fputc(' ', stderr);
