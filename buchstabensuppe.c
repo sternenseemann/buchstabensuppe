@@ -280,24 +280,24 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
 
           /*                     +--- cursor position
            *                     v
-           *                     +----------------+                   --+
-           *                     |                |                     | p
-           *                     |                |                     | i
-           *                     |                |                     | x
-           *                     |                |                     | e
-           *                     |                |                     | l
-           *                     |                |                     | _
-           *                     |                |                     | h
-           *                     |     +----------+   --+               | e
-           *                     |     |          |     | |             | i
-           *                     |     |          |     | | tt_offset_y | g
-           *                     |     |  glyph   |     | |             | h
-           * tt_offset_x --------+--+  |          |     | |             | t
-           *                     |  |  |          |     | |             |
-           *                     |  v  |          |     | v             |
+           *               +--   +----------------+                   --+
+           *               |     |                |                     | p
+           *               |     |                |                     | i
+           *             | |     |                |                     | x
+           * baseline_y1 | |     |                |                     | e
+           *             v |     |                |                     | l
+           *               |     |                |                     | _
+           *               |     |                |                     | h
+           *               |     |     +----------+   --+               | e
+           *               |     |     |          |     | |             | i
+           *               |     |     |          |     | | tt_offset_y | g
+           *               |     |     |  glyph   |     | |             | h
+           * tt_offset_x --+-----+--+  |          |     | |             | t
+           *               |     |  |  |          |     | |             |
+           *               |     |  v  |          |     | v             |
            *               +--   +-----+ - -  - - +   --+               |
-           * baseline_y0 | |     |     |          |                     |
-           *             v |     |     |          |                     |
+           * baseline_y0 ^ |     |     |          |                     |
+           *             | |     |     |          |                     |
            *               +--   +-----+----------+                  ---+
            *
            * This means the top right corner of the
@@ -320,14 +320,25 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
            *     and thus “above” means “below”)
            */
 
-          int baseline_y0;
+          int baseline_y0, baseline_y1;
 
-          stbtt_GetFontBoundingBox(font, &abyss, &baseline_y0, &abyss, &abyss);
-          baseline_y0 = (-1) * round(baseline_y0 * scale_y);
+          stbtt_GetFontBoundingBox(font, &abyss, &baseline_y0, &abyss, &baseline_y1);
+          baseline_y0 = round(baseline_y0 * scale_y);
+          baseline_y1 = round(baseline_y1 * scale_y);
+
+          int baseline = baseline_y1;
+
+          if(-baseline_y0 + baseline_y1 > (int) ctx->bs_fonts[font_index].bs_font_pixel_height) {
+            LOG("Warn: font is actually higher than pixel size");
+            // possible compromise between top & bottom in this case
+            // which makes zero sense:
+            // baseline = baseline_y0 + baseline_y1;
+          }
+
+          LOG("Baseline y0: %d y1: %d", baseline_y0, baseline_y1);
 
           int offset_x = glyph_pos[i].x_offset + tt_offset_x;
-          int offset_y = glyph_pos[i].y_offset + tt_offset_y - baseline_y0
-            + ctx->bs_fonts[font_index].bs_font_pixel_height;
+          int offset_y = glyph_pos[i].y_offset + tt_offset_y + baseline;
 
           LOG("Computed offset: (%d, %d)", offset_x, offset_y);
 
