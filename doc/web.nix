@@ -83,6 +83,12 @@ let
       max-width: 100%;
     }
 
+    blockquote {
+      border-left: 5px solid #efefef;
+      margin-left: 0;
+      padding-left: 10px;
+    }
+
     /* man page related */
     table.head, table.foot {
       width: 100%;
