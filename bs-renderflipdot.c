@@ -11,9 +11,10 @@
 #include <buchstabensuppe.h>
 
 #define DEFAULT_FONT_SIZE 16
-
-#define FLIPDOT_WIDTH 80
-#define FLIPDOT_HEIGHT 16
+#define DEFAULT_FLIPDOT_WIDTH 80
+#define DEFAULT_FLIPDOT_HEIGHT 16
+#define DEFAULT_HOST "localhost"
+#define DEFAULT_PORT "2323"
 
 void print_error(const char *name, const char *err) {
   fputs(name, stderr);
@@ -23,8 +24,32 @@ void print_error(const char *name, const char *err) {
 }
 
 void print_usage(const char *name) {
-  print_error(name, "[-h HOST] [-p PORT] [-s FONTSIZE] [-f FONTPATH [-f FONTPATH ...]] [-i] [-n] TEXT");
-  print_error(name, "-?");
+  size_t name_len = strlen(name);
+
+  fputs(name, stderr);
+  fputs(" [-s FONTSIZE] [-f FONTPATH [-f FONTPATH ...]] [-i] [-n]\n", stderr);
+
+  for(size_t i = 0; i < name_len; i++) {
+    fputc(' ', stderr);
+  }
+  fputs(" [-h HOST] [-p PORT] [-W WIDTH] [-H HEIGHT] TEXT\n", stderr);
+
+  fputs(name, stderr);
+  fputs(" -?\n", stderr);
+
+  fprintf(stderr,
+    "\n"
+    "  -n    dry run: only print the picture, don't send it\n"
+    "  -f    font to use, can be specified multiple times, fallback in given order\n"
+    "  -s    font size to use, must be specified before font(s) (default: %d)\n"
+    "  -i    invert the bitmap (so text is black on white)\n"
+    "  -h    hostname of the flipdots to use (default: %s)\n"
+    "  -p    port of the flipdots to use (default: %s)\n"
+    "  -W    width of the target flipdot display (default: %d)\n"
+    "  -H    height of the target flipdot display (default: %d)\n"
+    "  -?    display this help screen\n",
+    DEFAULT_FONT_SIZE, DEFAULT_HOST, DEFAULT_PORT,
+    DEFAULT_FLIPDOT_WIDTH, DEFAULT_FLIPDOT_HEIGHT);
 }
 
 bool send_bitarray(const char *host, const char *port, uint8_t *bits, ssize_t bits_size, const char *progname) {
@@ -66,25 +91,26 @@ bool send_bitarray(const char *host, const char *port, uint8_t *bits, ssize_t bi
 }
 
 int main(int argc, char **argv) {
-  const char *port = "2323";
-  const char *host = "localhost";
+  const char *port = DEFAULT_PORT;
+  const char *host = DEFAULT_HOST;
   const char *text;
-  int font_size = DEFAULT_FONT_SIZE;
+  int font_size = -1;
+  int flipdot_width  = DEFAULT_FLIPDOT_WIDTH;
+  int flipdot_height = DEFAULT_FLIPDOT_HEIGHT;
+  bool dry_run = false;
+  bool invert = false;
 
   int opt;
   int fontcount = 0;
-
-  bool dry_run = false;
-  bool invert = false;
 
   bs_context_t ctx;
   bs_context_init(&ctx);
 
   ctx.bs_rendering_flags = BS_RENDER_BINARY;
 
-  bool opterr = false;
+  bool parse_error = false;
 
-  while(!opterr && (opt = getopt(argc, argv, "inh:p:s:f:?")) != -1) {
+  while(!parse_error && (opt = getopt(argc, argv, "inh:p:s:f:?W:H:")) != -1) {
     switch(opt) {
       case 'i':
         invert = true;
@@ -96,19 +122,35 @@ int main(int argc, char **argv) {
         host = optarg;
         break;
       case 'p':
-        errno = 0;
         port = optarg;
+        break;
+      case 'W':
+        errno = 0;
+        flipdot_width = atoi(optarg);
+        if(errno != 0 || flipdot_width <= 0) {
+          print_error(argv[0], "flipdot width passed is not an integer");
+          parse_error = true;
+        }
+        break;
+      case 'H':
+        errno = 0;
+        flipdot_height = atoi(optarg);
+        if(errno != 0 || flipdot_height <= 0) {
+          print_error(argv[0], "flipdot height passed is not an integer");
+          parse_error = true;
+        }
         break;
       case 's':
         errno = 0;
         font_size = atoi(optarg);
         if(errno != 0 || font_size <= 0) {
           print_error(argv[0], "font size passed is not an integer");
-          opterr = true;
+          parse_error = true;
         }
         break;
       case 'f':
-        if(font_size == DEFAULT_FONT_SIZE) {
+        if(font_size == -1) {
+          font_size = DEFAULT_FONT_SIZE;
           print_error(argv[0], "warning: no font size specified, using default");
         }
 
@@ -121,29 +163,21 @@ int main(int argc, char **argv) {
         break;
       case '?':
         print_usage(argv[0]);
-        fputc('\n', stderr);
-        fputs("  -h    hostname of the flipdots to use (default: localhost)\n", stderr);
-        fputs("  -p    port of the flipdots to use (default: 2323)\n", stderr);
-        fputs("  -f    font to use, can be specified multiple times, fallback in given order\n", stderr);
-        fputs("  -s    font size to use, must be specified before font(s) (default: 16)\n", stderr);
-        fputs("  -i    invert the bitmap (so text is black on white)\n", stderr);
-        fputs("  -n    dry run: only print the picture, don't send it\n", stderr);
-        fputs("  -?    display this help screen\n", stderr);
         bs_context_free(&ctx);
         return 0;
         break;
       default:
-        opterr = true;
+        parse_error = true;
         break;
     }
   }
 
   if(optind >= argc) {
-    opterr = true;
+    parse_error = true;
     print_error(argv[0], "missing TEXT argument");
   }
 
-  if(opterr) {
+  if(parse_error) {
     bs_context_free(&ctx);
     print_usage(argv[0]);
     return 1;
@@ -170,9 +204,9 @@ int main(int argc, char **argv) {
     bs_bitmap_map(bitmap, bs_pixel_invert_binary);
   }
 
-  if(!dry_run && (bitmap.bs_bitmap_width < FLIPDOT_WIDTH ||
-      bitmap.bs_bitmap_height < FLIPDOT_HEIGHT)) {
-    bs_bitmap_extend(&bitmap, FLIPDOT_WIDTH, FLIPDOT_HEIGHT, invert);
+  if(!dry_run && (bitmap.bs_bitmap_width < flipdot_width ||
+      bitmap.bs_bitmap_height < flipdot_height)) {
+    bs_bitmap_extend(&bitmap, flipdot_width, flipdot_height, invert);
   }
 
   bs_bitmap_print(bitmap, true);
@@ -184,8 +218,8 @@ int main(int argc, char **argv) {
     view.bs_view_bitmap = bitmap;
     view.bs_view_offset_x = 0;
     view.bs_view_offset_y = 0;
-    view.bs_view_width = FLIPDOT_WIDTH;
-    view.bs_view_height = FLIPDOT_HEIGHT;
+    view.bs_view_width = flipdot_width;
+    view.bs_view_height = flipdot_height;
 
     size_t size;
     uint8_t *bits = bs_view_bitarray(view, &size);
