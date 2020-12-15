@@ -2,6 +2,7 @@ PREFIX ?= /usr/local
 BINDIR ?= $(PREFIX)/bin
 LIBDIR ?= $(PREFIX)/lib
 INCDIR ?= $(PREFIX)/include
+MANDIR ?= $(PREFIX)/share/man
 
 .PHONY: all clean install check
 all:
@@ -20,3 +21,4 @@ install:
 	install -Dm644 include/buchstabensuppe/bitmap.h -t $(INCDIR)/buchstabensuppe
 	install -Dm644 third_party/stb/stb_truetype.h -t $(INCDIR)
 	install -Dm644 libbuchstabensuppe.a -t $(LIBDIR)
+	install -Dm644 doc/man/bs-renderflipdot.1 -t $(MANDIR)/man1

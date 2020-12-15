@@ -1,0 +1,102 @@
+.Dd $Mdocdate$
+.Dt bs-renderflipdot 1
+.Os
+.Sh NAME
+.Nm bs-renderflipdot
+.Nd Render for and send text to a flipdot display
+.Sh SYNOPSIS
+.Nm
+.Op Fl n
+.Op Fl i
+.Op Fl s Ar size
+.Fl f Ar font
+.Op Fl f Ar font Op Fl f Ar ...
+.Op Fl W Ar width
+.Op Fl H Ar height
+.Op Fl h Ar host
+.Op Fl p Ar port
+.Ar text
+.Sh DESCRIPTION
+.Nm
+uses
+.Xr buchstabensuppe 3
+to render a given string onto a binary bitmap. It additionally has the ability to send the resulting bitmap to a flipdot display via its common UDP protocol which can be
+disabled using the
+.Fl n
+option.
+.Pp
+The full list of options is as follows:
+.Bl -tag -width Ds
+.It Fl n
+Dry run. Disables sending the rendered bitmap to a flipdot display via UDP which is useful if you just want to render a string to stdout.
+.It Fl i
+Render inverted. By default the resulting bitmap is rendered white on black, by passing
+.Fl i
+it is inverted to be black on white.
+.Fl s Ar size
+Specify the font size in pixels. When this option is given it affects all fonts that are added
+.Em after
+the
+.Fl s
+option. If it is missing, the default size of
+.Sy 16
+is used. Can be used multiple times.
+.It Fl f Ar path
+Add a font file. The added fonts are used as fallback fonts in the order they are given on the command line, meaning the first given font will be checked first for glyphs. If the font file contains multiple fonts, the one with index 0 is always used. Must be specified at least once.
+.It Fl W Ar width
+Width of the target flipdot display. Only relevant if
+.Fl n
+is not given, defaults to
+.Sy 80 .
+.It Fl H Ar height
+Height of the target flipdot display. Only relevant if
+.Fl n
+is not given, defaults to
+.Sy 16 .
+.It Fl h Ar host
+Host of the target flipdot display. Only relevant if
+.Fl n
+is not given,
+.Sy localhost
+is the default value.
+.It Fl p Ar port
+Port of the target flipdot display. Only relevant if
+.Fl n
+is not given,
+.Sy 2323
+is the default value.
+.It Fl ?
+Show usage information.
+.El
+.Sh Exit Status
+.Nm
+exits with 0 on success and with 1 if an error of any kind occurs.
+.Sh EXAMPLES
+Render
+.Qq Hello World
+using GNU Unifont in size 16 to stdout without sending it anywhere:
+.Bd -literal -offset indent
+bs-renderflipdot -s 16 -f /usr/share/fonts/truetype/unifont.ttf \e
+  -n "Hello World"
+.Ed
+.Pp
+Render
+.Qq Hi 👋
+black on white onto a flipdot display running on
+.Sy flipdot.lab:2323
+using GNU Unifont and its upper codepages variant Unifont Upper:
+.Bd -literal -offset indent
+bs-renderflipdot -i -s 16 \e
+  -f /usr/share/fonts/truetype/unifont.ttf \e
+  -f /usr/share/fonts/truetype/unifont_upper.ttf \e
+  -h flipdot.lab "Hi 👋"
+.Ed
+.Sh SEE ALSO
+.Xr buchstabensuppe 3
+.Sh AUTHORS
+.Nm
+and
+.Nm buchstabensuppe
+have been written and documented by
+.An sternenseemann ,
+.Mt sterni-buchstabensuppe@systemli.org .
