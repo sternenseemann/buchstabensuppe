@@ -14,14 +14,21 @@ let
   repoRoot = ./..;
 
   # TODO: man inclusion -Oman
-  buildManPage = { name, section }: ''
-    ${pkgs.mandoc}/bin/mandoc -Thtml -Ostyle=../style.css \
-      ${repoRoot}/doc/man/${name}.${toString section} \
-      > $out/man/${name}.${toString section}.html
-  '';
+  buildManPage = { name, section }:
+    let
+      out = "$out/man/${name}.${toString section}.html";
+    in ''
+      echo ${lib.escapeShellArg (commonHead 1 "${name}(${toString section})")} \
+        > ${out}
+      echo "<main>" >> ${out}
+      ${pkgs.mandoc}/bin/mandoc -Thtml -Ofragment \
+        ${repoRoot}/doc/man/${name}.${toString section} \
+        >> ${out}
+      echo "</main></body></html>" >> ${out}
+    '';
 
   readme = pkgs.runCommandLocal "README.html" {} ''
-    echo ${lib.escapeShellArg (commonHead 1)} > $out
+    echo ${lib.escapeShellArg (commonHead 1 "buchstabensuppe/README")} > $out
     echo "<body><main>" >> $out
     ${pkgs.lowdown}/bin/lowdown ${repoRoot}/README.md >> $out
     echo "</main></body></html>" >> $out
@@ -48,7 +55,7 @@ let
       color: #3e7eff;
     }
 
-    header, main, footer, table.head, table.foot, div.manual-text {
+    header, main, footer {
       margin-top: 0;
       margin-bottom: 0;
       margin-left: auto;
@@ -99,7 +106,7 @@ let
     }
   '';
 
-  commonHead = depth:
+  commonHead = depth: title:
     let
       styleDir = lib.concatStrings (builtins.genList (x: "../") depth);
     in ''
@@ -107,13 +114,13 @@ let
     <html lang="en">
       <head>
         <meta charset="utf-8">
-        <title>buchstabensuppe</title>
+        <title>${title}</title>
         <link rel="stylesheet" type="text/css" href="${styleDir}style.css">
       </head>
   '';
 
   index = pkgs.writeText "index.html" ''
-      ${commonHead 0}
+      ${commonHead 0 "buchstabensuppe"}
       <body>
         <header>
           <h1>buchstabensuppe</h1>
