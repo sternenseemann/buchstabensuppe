@@ -1,5 +1,5 @@
 .Dd $Mdocdate$
-.Dt bs-renderflipdot 1
+.Dt BS-RENDERFLIPDOT 1
 .Os
 .Sh NAME
 .Nm bs-renderflipdot
@@ -22,47 +22,59 @@
 .Nm
 uses
 .Xr buchstabensuppe 3
-to render a given string onto a binary bitmap. It additionally has the ability to send the resulting bitmap to a flipdot display via its common UDP protocol which can be
-disabled using the
+to render a given string onto a binary bitmap.
+It additionally has the ability to send the resulting bitmap to a flipdot display via its common UDP protocol which can be disabled using the
 .Fl n
 option.
 .Pp
 The full list of options is as follows:
 .Bl -tag -width Ds
 .It Fl n
-Dry run. Disables sending the rendered bitmap to a flipdot display via UDP which is useful if you just want to render a string to stdout.
+Dry run.
+Disables sending the rendered bitmap to a flipdot display via UDP which is useful if you just want to render a string to stdout.
 .It Fl i
-Render inverted. By default the resulting bitmap is rendered white on black, by passing
+Render inverted.
+By default the resulting bitmap is rendered white on black, by passing
 .Fl i
 it is inverted to be black on white.
 .Fl s Ar size
-Specify the font size in pixels. When this option is given it affects all fonts that are added
+Specify the font size in pixels.
+When this option is given it affects all fonts that are added
 .Em after
 the
 .Fl s
-option. If it is missing, the default size of
+option.
+If it is missing, the default size of
 .Sy 16
-is used. Can be used multiple times.
+is used.
+Can be used multiple times.
 .It Fl f Ar path
-Add a font file. The added fonts are used as fallback fonts in the order they are given on the command line, meaning the first given font will be checked first for glyphs. If the font file contains multiple fonts, the one with index 0 is always used. Must be specified at least once.
+Add a font file.
+The added fonts are used as fallback fonts in the order they are given on the command line, meaning the first given font will be checked first for glyphs.
+If the font file contains multiple fonts, the one with index 0 is always used.
+Must be specified at least once.
 .It Fl W Ar width
-Width of the target flipdot display. Only relevant if
+Width of the target flipdot display.
+Only relevant if
 .Fl n
 is not given, defaults to
 .Sy 80 .
 .It Fl H Ar height
-Height of the target flipdot display. Only relevant if
+Height of the target flipdot display.
+Only relevant if
 .Fl n
 is not given, defaults to
 .Sy 16 .
 .It Fl h Ar host
-Host of the target flipdot display. Only relevant if
+Host of the target flipdot display.
+Only relevant if
 .Fl n
 is not given,
 .Sy localhost
 is the default value.
 .It Fl p Ar port
-Port of the target flipdot display. Only relevant if
+Port of the target flipdot display.
+Only relevant if
 .Fl n
 is not given,
 .Sy 2323
