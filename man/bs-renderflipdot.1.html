@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <link rel="stylesheet" href="../style.css" type="text/css" media="all"/>
+  <title>bs-renderflipdot(1)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">bs-renderflipdot(1)</td>
+    <td class="head-vol">General Commands Manual</td>
+    <td class="head-rtitle">bs-renderflipdot(1)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<section class="Sh">
+<h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+<code class="Nm">bs-renderflipdot</code> &#x2014;
+<div class="Nd">Render for and send text to a flipdot display</div>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<table class="Nm">
+  <tr>
+    <td><code class="Nm">bs-renderflipdot</code></td>
+    <td>[<code class="Fl">-n</code>] [<code class="Fl">-i</code>]
+      [<code class="Fl">-s</code> <var class="Ar">size</var>]
+      <code class="Fl">-f</code> <var class="Ar">font</var>
+      [<code class="Fl">-f</code> <var class="Ar">font</var>
+      [<code class="Fl">-f</code> <var class="Ar">...</var>]]
+      [<code class="Fl">-W</code> <var class="Ar">width</var>]
+      [<code class="Fl">-H</code> <var class="Ar">height</var>]
+      [<code class="Fl">-h</code> <var class="Ar">host</var>]
+      [<code class="Fl">-p</code> <var class="Ar">port</var>]
+      <var class="Ar">text</var></td>
+  </tr>
+</table>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<code class="Nm">bs-renderflipdot</code> uses
+  <a class="Xr">buchstabensuppe(3)</a> to render a given string onto a binary
+  bitmap. It additionally has the ability to send the resulting bitmap to a
+  flipdot display via its common UDP protocol which can be disabled using the
+  <code class="Fl">-n</code> option.
+<p class="Pp">The full list of options is as follows:</p>
+<dl class="Bl-tag">
+  <dt><a class="permalink" href="#n"><code class="Fl" id="n">-n</code></a></dt>
+  <dd>Dry run. Disables sending the rendered bitmap to a flipdot display via UDP
+      which is useful if you just want to render a string to stdout.</dd>
+  <dt><a class="permalink" href="#i"><code class="Fl" id="i">-i</code></a></dt>
+  <dd>Render inverted. By default the resulting bitmap is rendered white on
+      black, by passing <code class="Fl">-i</code> it is inverted to be black on
+      white. <code class="Fl">-s</code> <var class="Ar">size</var> Specify the
+      font size in pixels. When this option is given it affects all fonts that
+      are added <i class="Em">after</i> the <code class="Fl">-s</code> option.
+      If it is missing, the default size of <b class="Sy">16</b> is used. Can be
+      used multiple times.</dd>
+  <dt><a class="permalink" href="#f"><code class="Fl" id="f">-f</code></a>
+    <var class="Ar">path</var></dt>
+  <dd>Add a font file. The added fonts are used as fallback fonts in the order
+      they are given on the command line, meaning the first given font will be
+      checked first for glyphs. If the font file contains multiple fonts, the
+      one with index 0 is always used. Must be specified at least once.</dd>
+  <dt><a class="permalink" href="#W"><code class="Fl" id="W">-W</code></a>
+    <var class="Ar">width</var></dt>
+  <dd>Width of the target flipdot display. Only relevant if
+      <code class="Fl">-n</code> is not given, defaults to
+    <b class="Sy">80</b>.</dd>
+  <dt><a class="permalink" href="#H"><code class="Fl" id="H">-H</code></a>
+    <var class="Ar">height</var></dt>
+  <dd>Height of the target flipdot display. Only relevant if
+      <code class="Fl">-n</code> is not given, defaults to
+    <b class="Sy">16</b>.</dd>
+  <dt><a class="permalink" href="#h"><code class="Fl" id="h">-h</code></a>
+    <var class="Ar">host</var></dt>
+  <dd>Host of the target flipdot display. Only relevant if
+      <code class="Fl">-n</code> is not given, <b class="Sy">localhost</b> is
+      the default value.</dd>
+  <dt><a class="permalink" href="#p"><code class="Fl" id="p">-p</code></a>
+    <var class="Ar">port</var></dt>
+  <dd>Port of the target flipdot display. Only relevant if
+      <code class="Fl">-n</code> is not given, <b class="Sy">2323</b> is the
+      default value.</dd>
+  <dt><code class="Fl">-</code>?</dt>
+  <dd>Show usage information.</dd>
+</dl>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="Exit_Status"><a class="permalink" href="#Exit_Status">Exit
+  Status</a></h1>
+<code class="Nm">bs-renderflipdot</code> exits with 0 on success and with 1 if
+  an error of any kind occurs.
+</section>
+<section class="Sh">
+<h1 class="Sh" id="EXAMPLES"><a class="permalink" href="#EXAMPLES">EXAMPLES</a></h1>
+Render &#x201C;Hello World&#x201D; using GNU Unifont in size 16 to stdout
+  without sending it anywhere:
+<div class="Bd Pp Bd-indent">
+<pre>
+bs-renderflipdot -s 16 -f /usr/share/fonts/truetype/unifont.ttf \
+  -n &quot;Hello World&quot;
+</pre>
+</div>
+<p class="Pp">Render &#x201C;Hi &#x1F44B;&#x201D; black on white onto a flipdot
+    display running on <b class="Sy">flipdot.lab:2323</b> using GNU Unifont and
+    its upper codepages variant Unifont Upper:</p>
+<div class="Bd Pp Bd-indent">
+<pre>
+bs-renderflipdot -i -s 16 \
+  -f /usr/share/fonts/truetype/unifont.ttf \
+  -f /usr/share/fonts/truetype/unifont_upper.ttf \
+  -h flipdot.lab &quot;Hi &#x1F44B;&quot;
+</pre>
+</div>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h1>
+<a class="Xr">buchstabensuppe(3)</a>
+</section>
+<section class="Sh">
+<h1 class="Sh" id="AUTHORS"><a class="permalink" href="#AUTHORS">AUTHORS</a></h1>
+<code class="Nm">bs-renderflipdot</code> and
+  <code class="Nm">buchstabensuppe</code> have been written and documented by
+  <span class="An">sternenseemann</span>,
+  <a class="Mt" href="mailto:sterni-buchstabensuppe@systemli.org">sterni-buchstabensuppe@systemli.org</a>.
+</section>
+</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">December 15, 2020</td>
+    <td class="foot-os">NixOS</td>
+  </tr>
+</table>
+</body>
+</html>
