@@ -11,7 +11,13 @@ let
   ];
 
   lib = pkgs.lib;
-  repoRoot = ./..;
+  root = ./..;
+  repoRoot = builtins.path {
+    name = "buchstabensuppe-src";
+    path = root;
+    filter = pkgs.nix-gitignore.gitignoreFilter
+      (builtins.readFile ./../.gitignore) root;
+  };
 
   # TODO: man inclusion -Oman
   buildManPage = { name, section }:
