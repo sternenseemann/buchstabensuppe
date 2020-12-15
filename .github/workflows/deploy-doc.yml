@@ -19,7 +19,7 @@ jobs:
       # permission change taken from curry-club-augsburg.de
       - name: Build web output
         run: |
-          nix-build docs/web.nix
+          nix-build doc/web.nix
           cp -RL result tmp
           chmod -R +w tmp
       - name: Deploy output to GitHub Pages
