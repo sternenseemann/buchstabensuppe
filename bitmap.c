@@ -103,11 +103,11 @@ void bs_bitmap_free(bs_bitmap_t *b) {
   }
 }
 
-unsigned char bs_bitmap_get(bs_bitmap_t b, int x, int y) {
+unsigned char bs_bitmap_get(bs_bitmap_t b, int x, int y, unsigned char def) {
   if(x < 0 || y < 0 ||
       x >= b.bs_bitmap_width || y >= b.bs_bitmap_height) {
     errno = EINVAL;
-    return 0;
+    return def;
   }
 
   return b.bs_bitmap[y * b.bs_bitmap_width + x];
@@ -150,7 +150,7 @@ void bs_bitmap_print(bs_bitmap_t bitmap, bool binary) {
   }
 }
 
-uint8_t *bs_view_bitarray(bs_view_t view, size_t *size) {
+uint8_t *bs_view_bitarray(bs_view_t view, size_t *size, unsigned char def) {
   int view_max_y = view.bs_view_offset_y + view.bs_view_height;
   int view_max_x = view.bs_view_offset_x + view.bs_view_width;
 
@@ -172,7 +172,7 @@ uint8_t *bs_view_bitarray(bs_view_t view, size_t *size) {
         // reduce pixel to a single bit works regardless of monospace and
         // grayscale bitmaps -- however grayscale bitmaps are not converted
         // on the fly TODO
-        uint8_t pixel_val = bs_bitmap_get(view.bs_view_bitmap, x + i, y) > 0;
+        uint8_t pixel_val = bs_bitmap_get(view.bs_view_bitmap, x + i, y, def) > 0;
         byte |= pixel_val << (7 - i);
       }
 

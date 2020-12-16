@@ -84,9 +84,9 @@ void bs_bitmap_set(bs_bitmap_t bitmap, int x, int y, unsigned char value);
  * @brief Get a pixel value
  *
  * Gets the value at the specified location. If the location
- * is out of bounds it returns 0 and sets `errno` to `EINVAL`.
+ * is out of bounds it returns `def` and sets `errno` to `EINVAL`.
  */
-unsigned char bs_bitmap_get(bs_bitmap_t bitmap, int x, int y);
+unsigned char bs_bitmap_get(bs_bitmap_t bitmap, int x, int y, unsigned char def);
 
 /*!
  * @brief Copy a bitmap into another one
@@ -124,10 +124,14 @@ void bs_bitmap_print(bs_bitmap_t bitmap, bool binary_image);
  * `view` describes the bitmap to be used and the area
  * of it. `size` will hold the length of the returned array.
  *
+ * If the `view` contains areas which are not covered by its
+ * bitmap, these pixels are treated as if they had the value
+ * `def`.
+ *
  * On error `NULL` is returned and `size` is 0. The allocated
  * memory must be freed by the caller.
  */
-uint8_t *bs_view_bitarray(bs_view_t view, size_t *size);
+uint8_t *bs_view_bitarray(bs_view_t view, size_t *size, unsigned char def);
 
 /*!
  * @name Bitmap Processing

@@ -141,7 +141,7 @@ bool render_flipdot(const char *host, const char *port, int family, const char *
     // render first frame immediately
 
     size_t bits_size;
-    uint8_t *bits = bs_view_bitarray(view, &bits_size);
+    uint8_t *bits = bs_view_bitarray(view, &bits_size, invert);
 
     if(multiple_frames) {
       // TODO use sigaction
@@ -176,7 +176,7 @@ bool render_flipdot(const char *host, const char *port, int family, const char *
       if(!multiple_frames) {
         finished = true;
       } else if(!finished) {
-        bits = bs_view_bitarray(view, &bits_size);
+        bits = bs_view_bitarray(view, &bits_size, invert);
         pause();
       }
     }
