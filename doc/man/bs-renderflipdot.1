@@ -11,6 +11,8 @@
 .Op Fl s Ar size
 .Fl f Ar font
 .Op Fl f Ar font Op Fl f Ar ...
+.Op Fl S
+.Op Fl P
 .Op Fl W Ar width
 .Op Fl H Ar height
 .Op Fl h Ar host
@@ -53,6 +55,23 @@ Add a font file.
 The added fonts are used as fallback fonts in the order they are given on the command line, meaning the first given font will be checked first for glyphs.
 If the font file contains multiple fonts, the one with index 0 is always used.
 Must be specified at least once.
+.It Fl S
+Scroll the text through the screen instead of cutting it off at the edge of the screen if it overflows.
+The scrolling motion is rendered at 8 FPS so a real flipdot can keep up, which means that
+.Nm
+takes roughly
+.Sy (screen_width * 2 + bitmap_width) * (1s / 8)
+to finish.
+.It Fl P
+Page the text instead of cutting it off at the edge of the screen.
+This means the rendered bitmap would be cut up into pieces of
+.Sy screen_width .
+Each of these pieces is shown for 2s which means
+.Nm
+takes roughly
+.Sy floor(bitmap_width / screen_width) * 2s
+to finish.
+
 .It Fl W Ar width
 Width of the target flipdot display.
 Only relevant if

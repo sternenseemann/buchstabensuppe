@@ -1,11 +1,13 @@
 #define _POSIX_C_SOURCE 200112L /* getopt, getaddrinfo, ... */
 #include <errno.h>
 #include <netdb.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/socket.h>
+#include <sys/types.h>
+#include <sys/time.h>
 #include <unistd.h>
 
 #include <buchstabensuppe.h>
@@ -15,6 +17,15 @@
 #define DEFAULT_FLIPDOT_HEIGHT 16
 #define DEFAULT_HOST "localhost"
 #define DEFAULT_PORT "2323"
+
+#define SCROLL_DELAY_MICROSECONDS 125000 // 8 FPS
+#define PAGE_DELAY_SECONDS 2
+
+enum render_mode {
+  RENDER_NORMAL,
+  RENDER_PAGE,
+  RENDER_SCROLL,
+};
 
 void print_error(const char *name, const char *err) {
   fputs(name, stderr);
@@ -32,7 +43,7 @@ void print_usage(const char *name) {
   for(size_t i = 0; i < name_len; i++) {
     fputc(' ', stderr);
   }
-  fputs(" [-4|-6] [-h HOST] [-p PORT] [-W WIDTH] [-H HEIGHT] TEXT\n", stderr);
+  fputs(" [-4|-6] [-S|-P] [-h HOST] [-p PORT] [-W WIDTH] [-H HEIGHT] TEXT\n", stderr);
 
   fputs(name, stderr);
   fputs(" -?\n", stderr);
@@ -43,6 +54,8 @@ void print_usage(const char *name) {
     "  -f    font to use, can be specified multiple times, fallback in given order\n"
     "  -s    font size to use, must be specified before font(s) (default: %d)\n"
     "  -i    invert the bitmap (so text is black on white)\n"
+    "  -S    scroll text through the screen\n"
+    "  -P    page text if it overflows\n"
     "  -h    hostname of the flipdots to use (default: %s)\n"
     "  -p    port of the flipdots to use (default: %s)\n"
     "  -W    width of the target flipdot display (default: %d)\n"
@@ -54,11 +67,54 @@ void print_usage(const char *name) {
     DEFAULT_FLIPDOT_WIDTH, DEFAULT_FLIPDOT_HEIGHT);
 }
 
-bool send_bitarray(const char *host, const char *port, int family, uint8_t *bits, ssize_t bits_size, const char *progname) {
+bool scroll_next_view(bs_view_t *view, int flipdot_width) {
+  if(view->bs_view_offset_x >= view->bs_view_bitmap.bs_bitmap_width) {
+    view->bs_view_offset_x = -flipdot_width;
+    return true;
+  } else {
+    view->bs_view_offset_x++;
+    return false;
+  }
+}
+
+bool page_next_view(bs_view_t *view, int flipdot_width) {
+  if(view->bs_view_offset_x + view->bs_view_width
+      >= view->bs_view_bitmap.bs_bitmap_width) {
+    return true;
+  } else {
+    view->bs_view_offset_x += flipdot_width;
+  }
+  return false;
+}
+
+void ignore_signal(int signum) {
+  (void) signum;
+}
+
+bool render_flipdot(const char *host, const char *port, int family, const char *progname, bs_bitmap_t *bitmap, enum render_mode mode, struct itimerval delay, int flipdot_width, int flipdot_height, bool invert) {
+  if(mode == RENDER_NORMAL && (bitmap->bs_bitmap_width < flipdot_width ||
+      bitmap->bs_bitmap_height < flipdot_height)) {
+    bs_bitmap_extend(bitmap, flipdot_width, flipdot_height, invert);
+  } else {
+    bs_bitmap_extend(bitmap, bitmap->bs_bitmap_width, flipdot_height, invert);
+  }
+
+  bs_view_t view;
+
+  // initial state
+  view.bs_view_bitmap = *bitmap;
+  view.bs_view_width = flipdot_width;
+  view.bs_view_height = flipdot_height;
+  view.bs_view_offset_y = 0;
+
+  if(mode == RENDER_SCROLL) {
+    view.bs_view_offset_x = -flipdot_width;
+  } else {
+    view.bs_view_offset_x = 0;
+  }
+
   struct addrinfo *addrs;
   struct addrinfo hints;
-
-  bool result = false;
 
   memset(&hints, 0, sizeof(hints));
 
@@ -73,18 +129,67 @@ bool send_bitarray(const char *host, const char *port, int family, uint8_t *bits
 
   int sockfd = socket(addrs->ai_family, SOCK_DGRAM, IPPROTO_UDP);
 
+  bool failure = false;
+
   if(sockfd < 0) {
     print_error(progname, "could not create socket");
   } else {
-    result = sendto(sockfd, bits, bits_size, 0,
-        addrs->ai_addr, addrs->ai_addrlen) == bits_size;
+    bool multiple_frames = mode == RENDER_SCROLL ||
+      mode == RENDER_PAGE;
+    bool finished = false;
+
+    // render first frame immediately
+
+    size_t bits_size;
+    uint8_t *bits = bs_view_bitarray(view, &bits_size);
+
+    if(multiple_frames) {
+      // TODO use sigaction
+      // TODO handle SIGINT and SIGTERM
+      signal(SIGALRM, ignore_signal);
+
+      failure = setitimer(ITIMER_REAL, &delay, NULL) != 0;
+    }
+
+    while(!finished && !failure) {
+      if(bits == NULL) {
+        failure = true;
+        break;
+      }
+
+      failure = sendto(sockfd, bits, bits_size, 0,
+          addrs->ai_addr, addrs->ai_addrlen) != (ssize_t) bits_size;
+
+      if(multiple_frames) {
+        // restore handler which is removed by sendto
+        signal(SIGALRM, ignore_signal);
+      }
+
+      free(bits);
+
+      if(mode == RENDER_SCROLL) {
+        finished = scroll_next_view(&view, flipdot_width);
+      } else if(mode == RENDER_PAGE) {
+        finished = page_next_view(&view, flipdot_width);
+      }
+
+      if(!multiple_frames) {
+        finished = true;
+      } else if(!finished) {
+        bits = bs_view_bitarray(view, &bits_size);
+        pause();
+      }
+    }
+
+    const struct itimerval timer_off = { { 0, 0 }, { 0, 0 } };
+    setitimer(ITIMER_REAL, &timer_off, NULL);
 
     close(sockfd);
   }
 
   freeaddrinfo(addrs);
 
-  return result;
+  return !failure;
 }
 
 int main(int argc, char **argv) {
@@ -97,6 +202,9 @@ int main(int argc, char **argv) {
   bool dry_run = false;
   bool invert = false;
   int ip_family = AF_UNSPEC;
+  enum render_mode mode = RENDER_NORMAL;
+  struct itimerval delay;
+  memset(&delay, 0, sizeof(struct itimerval));
 
   int opt;
   int fontcount = 0;
@@ -108,8 +216,20 @@ int main(int argc, char **argv) {
 
   bool parse_error = false;
 
-  while(!parse_error && (opt = getopt(argc, argv, "46inh:p:s:f:?W:H:")) != -1) {
+  while(!parse_error && (opt = getopt(argc, argv, "SP46inh:p:s:f:?W:H:")) != -1) {
     switch(opt) {
+      case 'S':
+        mode = RENDER_SCROLL;
+        memset(&delay, 0, sizeof(struct itimerval));
+        delay.it_interval.tv_usec = SCROLL_DELAY_MICROSECONDS;
+        delay.it_value.tv_usec = SCROLL_DELAY_MICROSECONDS;
+        break;
+      case 'P':
+        mode = RENDER_PAGE;
+        memset(&delay, 0, sizeof(struct itimerval));
+        delay.it_interval.tv_sec = PAGE_DELAY_SECONDS;
+        delay.it_value.tv_sec = PAGE_DELAY_SECONDS;
+        break;
       case '4':
         ip_family = AF_INET;
         break;
@@ -208,37 +328,13 @@ int main(int argc, char **argv) {
     bs_bitmap_map(bitmap, bs_pixel_invert_binary);
   }
 
-  if(!dry_run && (bitmap.bs_bitmap_width < flipdot_width ||
-      bitmap.bs_bitmap_height < flipdot_height)) {
-    bs_bitmap_extend(&bitmap, flipdot_width, flipdot_height, invert);
-  }
-
   bs_bitmap_print(bitmap, true);
 
   if(!dry_run) {
     printf("Sending image to %s:%s\n", host, port);
 
-    bs_view_t view;
-    view.bs_view_bitmap = bitmap;
-    view.bs_view_offset_x = 0;
-    view.bs_view_offset_y = 0;
-    view.bs_view_width = flipdot_width;
-    view.bs_view_height = flipdot_height;
-
-    size_t size;
-    uint8_t *bits = bs_view_bitarray(view, &size);
-
-    if(size > 0) {
-      if(!send_bitarray(host, port, ip_family, bits, (ssize_t) size, argv[0])) {
-        status = 1;
-      }
-    } else {
-      print_error(argv[0], "bs_view_bitarray failed");
+    if(!render_flipdot(host, port, ip_family, argv[0], &bitmap, mode, delay, flipdot_width, flipdot_height, invert)) {
       status = 1;
-    }
-
-    if(bits != NULL) {
-      free(bits);
     }
   }
 
