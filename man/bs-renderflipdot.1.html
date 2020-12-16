@@ -30,6 +30,7 @@
       <code class="Fl">-f</code> <var class="Ar">font</var>
       [<code class="Fl">-f</code> <var class="Ar">font</var>
       [<code class="Fl">-f</code> <var class="Ar">...</var>]]
+      [<code class="Fl">-S</code>] [<code class="Fl">-P</code>]
       [<code class="Fl">-W</code> <var class="Ar">width</var>]
       [<code class="Fl">-H</code> <var class="Ar">height</var>]
       [<code class="Fl">-h</code> <var class="Ar">host</var>]
@@ -65,6 +66,21 @@
       they are given on the command line, meaning the first given font will be
       checked first for glyphs. If the font file contains multiple fonts, the
       one with index 0 is always used. Must be specified at least once.</dd>
+  <dt><a class="permalink" href="#S"><code class="Fl" id="S">-S</code></a></dt>
+  <dd>Scroll the text through the screen instead of cutting it off at the edge
+      of the screen if it overflows. The scrolling motion is rendered at 8 FPS
+      so a real flipdot can keep up, which means that
+      <code class="Nm">bs-renderflipdot</code> takes roughly
+      <b class="Sy">(screen_width * 2 + bitmap_width) * (1s / 8)</b> to
+    finish.</dd>
+  <dt><a class="permalink" href="#P"><code class="Fl" id="P">-P</code></a></dt>
+  <dd>Page the text instead of cutting it off at the edge of the screen. This
+      means the rendered bitmap would be cut up into pieces of
+      <b class="Sy">screen_width</b>. Each of these pieces is shown for 2s which
+      means <code class="Nm">bs-renderflipdot</code> takes roughly
+      <b class="Sy">floor(bitmap_width / screen_width) * 2s</b> to finish.
+    <p class="Pp"></p>
+  </dd>
   <dt><a class="permalink" href="#W"><code class="Fl" id="W">-W</code></a>
     <var class="Ar">width</var></dt>
   <dd>Width of the target flipdot display. Only relevant if
@@ -137,7 +153,7 @@ bs-renderflipdot -i -s 16 \
 </div>
 <table class="foot">
   <tr>
-    <td class="foot-date">December 15, 2020</td>
+    <td class="foot-date">December 16, 2020</td>
     <td class="foot-os">NixOS</td>
   </tr>
 </table>
