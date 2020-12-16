@@ -16,6 +16,13 @@ case "$2" in
     redo-ifchange third_party/stb/stb_truetype.h
     redo-ifchange include/buchstabensuppe/bitmap.h
     ;;
+  bs-renderflipdot)
+    redo-ifchange include/buchstabensuppe/bitmap.h
+    redo-ifchange include/buchstabensuppe.h
+    ;;
+  bitmap)
+    redo-ifchange util.h
+    ;;
   *)
 esac
 
