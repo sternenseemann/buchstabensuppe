@@ -34,10 +34,10 @@ typedef struct bs_bitmap {
  */
 typedef struct bs_bm_view {
   bs_bitmap_t  bs_view_bitmap;
-  unsigned int bs_view_offset_x;
-  unsigned int bs_view_offset_y;
-  unsigned int bs_view_width;
-  unsigned int bs_view_height;
+  int bs_view_offset_x;
+  int bs_view_offset_y;
+  int bs_view_width;
+  int bs_view_height;
 } bs_view_t;
 
 /*!
