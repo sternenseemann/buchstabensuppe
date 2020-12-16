@@ -23,6 +23,7 @@ bool bs_bitmap_extend(bs_bitmap_t *b, int new_w, int new_h, unsigned char init) 
       (b->bs_bitmap_width == 0 && diff_x == 0)) {
     b->bs_bitmap_width = new_w;
     b->bs_bitmap_height = new_h;
+    return true;
   }
 
   // perform y only resize if possible because it doesn't require copying
