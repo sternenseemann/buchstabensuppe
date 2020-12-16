@@ -50,6 +50,11 @@ bool bs_add_font(bs_context_t *ctx, const char *font_path, int font_index, unsig
     return false;
   }
 
+  if(!S_ISREG(finfo.st_mode)) {
+    LOG("Error: not a regular file %s", font_path);
+    return false;
+  }
+
   size_t file_buffer_size = finfo.st_size;
   unsigned char *file_buffer = malloc(sizeof(unsigned char) * file_buffer_size);
 
