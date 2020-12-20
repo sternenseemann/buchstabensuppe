@@ -1,3 +1,6 @@
+/*!
+ * @file buchstabensuppe.h
+ */
 #ifndef BUCHSTABENSUPPE_H
 #define BUCHSTABENSUPPE_H
 
@@ -11,6 +14,10 @@
 
 // buffers
 
+/*!
+ * @name UTF-32 Buffer API
+ * @{
+ */
 typedef struct bs_utf32_buffer {
   uint32_t *bs_utf32_buffer;
   size_t    bs_utf32_buffer_len;
@@ -27,7 +34,12 @@ bool bs_utf32_buffer_append_single(uint32_t, bs_utf32_buffer_t *);
 
 bs_utf32_buffer_t bs_decode_utf8(const char *, size_t);
 
-// main buchstabensuppe api
+//! @}
+
+/*!
+ * @name Font Rendering
+ * @{
+ */
 
 typedef struct bs_font {
   hb_font_t      *bs_font_hb;
@@ -66,5 +78,7 @@ bool bs_render_grapheme_append(bs_context_t *, bs_bitmap_t *, bs_cursor_t *,
 
 bool bs_render_utf32_string_append(bs_context_t *, bs_bitmap_t *,
   bs_cursor_t *, bs_utf32_buffer_t);
+
+//! @}
 
 #endif

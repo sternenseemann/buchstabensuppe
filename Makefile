@@ -10,6 +10,7 @@ all:
 
 clean:
 	rm -f *.o *.a *.exe third_party/stb_truetype.o
+	rm -rf doc/html
 
 check:
 	redo test.exe
