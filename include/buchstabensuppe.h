@@ -50,7 +50,8 @@ typedef struct bs_font {
 } bs_font_t;
 
 enum bs_rendering_flag {
-  BS_RENDER_BINARY    = 0x01,
+  BS_RENDER_BINARY      = 0b001,
+  BS_RENDER_NO_FALLBACK = 0b100,
 };
 
 typedef struct bs_context {

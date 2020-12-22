@@ -12,6 +12,8 @@
 
 #include <buchstabensuppe.h>
 
+#define FALLBACK_CODEPOINT 0xFFFD
+
 #define FONT_SCALE_MULTIPLIER 1
 
 #define LOG(...) \
@@ -372,6 +374,21 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
     hb_buffer_destroy(buf);
 
     font_index++;
+  }
+
+  if(!have_glyphs && !(ctx->bs_rendering_flags & BS_RENDER_NO_FALLBACK)) {
+    bs_utf32_buffer_t fallback_grapheme = bs_utf32_buffer_new(1);
+    bs_utf32_buffer_append_single(FALLBACK_CODEPOINT, &fallback_grapheme);
+
+    if(fallback_grapheme.bs_utf32_buffer_len > 0) {
+      // avoid infinite recursion
+      ctx->bs_rendering_flags |= BS_RENDER_NO_FALLBACK;
+      have_glyphs = bs_render_grapheme_append(ctx,
+        target, cursor, fallback_grapheme, 0, 1);
+      ctx->bs_rendering_flags ^= BS_RENDER_NO_FALLBACK;
+    }
+
+    bs_utf32_buffer_free(&fallback_grapheme);
   }
 
   return have_glyphs;
