@@ -3,7 +3,7 @@ source ./build_config
 
 redo-ifchange "$2.c"
 
-possible_headers="include/$2.h include/buchstabensuppe/$2.h third_party/stb/$2.h"
+possible_headers="include/$2.h include/buchstabensuppe/$2.h"
 
 for h in $possible_headers; do
   if test -e "$h"; then
@@ -13,7 +13,6 @@ done
 
 case "$2" in
   buchstabensuppe)
-    redo-ifchange third_party/stb_truetype.o
     redo-ifchange bitmap.o
     ;;
   bs-renderflipdot)

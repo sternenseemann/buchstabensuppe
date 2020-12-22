@@ -6,9 +6,9 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <stb_truetype.h>
-#include <utf8proc.h>
 #include <harfbuzz/hb.h>
+#include <schrift.h>
+#include <utf8proc.h>
 
 #include <buchstabensuppe.h>
 
@@ -31,6 +31,7 @@ void bs_context_init(bs_context_t *ctx) {
 
 void bs_context_free(bs_context_t *ctx) {
   for(size_t i = 0; i < ctx->bs_fonts_len; i++) {
+    sft_freefont(ctx->bs_fonts[i].bs_font_schrift);
     free(ctx->bs_fonts[i].bs_font_file);
     hb_font_destroy(ctx->bs_fonts[i].bs_font_hb);
   }
@@ -84,11 +85,10 @@ bool bs_add_font(bs_context_t *ctx, const char *font_path, int font_index, unsig
 
   fclose(font_file);
 
-  stbtt_fontinfo stbtt_font;
+  SFT_Font *sft_font = sft_loadmem(file_buffer, file_buffer_size);
 
-  if(!stbtt_InitFont(&stbtt_font, file_buffer,
-        stbtt_GetFontOffsetForIndex(file_buffer, font_index))) {
-    LOG("Error: stbtt_InitFont failed");
+  if(sft_font == NULL) {
+    LOG("Error: sft_loadmem failed");
     free(file_buffer);
     return false;
   }
@@ -139,12 +139,10 @@ bool bs_add_font(bs_context_t *ctx, const char *font_path, int font_index, unsig
 
   ctx->bs_fonts = tmp;
   ctx->bs_fonts[new_index].bs_font_hb = font;
+  ctx->bs_fonts[new_index].bs_font_schrift = sft_font;
   ctx->bs_fonts[new_index].bs_font_file = file_buffer;
   ctx->bs_fonts[new_index].bs_font_file_size = file_buffer_size;
   ctx->bs_fonts[new_index].bs_font_pixel_height = pixel_height;
-
-  memcpy(&(ctx->bs_fonts[new_index].bs_font_stbtt),
-    &stbtt_font, sizeof(stbtt_fontinfo));
 
   return true;
 }
@@ -268,87 +266,114 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
     LOG("Missing %u/%u glyphs", missing_glyphs, glyph_count);
 
     if(have_glyphs) {
-      stbtt_fontinfo *font = &ctx->bs_fonts[font_index].bs_font_stbtt;
-      float scale_y = stbtt_ScaleForPixelHeight(font,
-        ctx->bs_fonts[font_index].bs_font_pixel_height);
+      struct SFT sft;
+      struct SFT_LMetrics lmetrics;
+      memset(&sft, 0, sizeof(struct SFT));
+
+      sft.font = ctx->bs_fonts[font_index].bs_font_schrift;
+      sft.font = ctx->bs_fonts[font_index].bs_font_schrift;
+      sft.yScale = ctx->bs_fonts[font_index].bs_font_pixel_height;
+      sft.xScale = ctx->bs_fonts[font_index].bs_font_pixel_height;
+      sft.flags = SFT_DOWNWARD_Y;
+
+      if(sft_lmetrics(&sft, &lmetrics) != 0) {
+        hb_buffer_destroy(buf);
+        return false;
+      }
 
       for(unsigned int i = 0; i < glyph_count; i++) {
-        int abyss; // tmp var for unused values
-        int tt_offset_x, tt_offset_y;
+        struct SFT_HMetrics hmetrics;
+        struct SFT_Extents  extents;
+        struct SFT_Image    sft_image;
 
+        if(sft_extents(&sft, glyph_info[i].codepoint, &extents) != 0) {
+          hb_buffer_destroy(buf);
+          return false;
+        }
+
+        // allocate manually since we don't need to initialize the memory
         bs_bitmap_t glyph;
-        glyph.bs_bitmap = stbtt_GetGlyphBitmap(font, scale_y, scale_y,
-          glyph_info[i].codepoint, &glyph.bs_bitmap_width, &glyph.bs_bitmap_height,
-          &tt_offset_x, &tt_offset_y);
+        glyph.bs_bitmap = malloc(extents.minWidth * extents.minHeight);
+        glyph.bs_bitmap_width = extents.minWidth;
+        glyph.bs_bitmap_height = extents.minHeight;
+
+        if(glyph.bs_bitmap == NULL) {
+          hb_buffer_destroy(buf);
+          return false;
+        }
+
+        // fill out structure for libschrift call
+        sft_image.pixels = glyph.bs_bitmap;
+        sft_image.width  = glyph.bs_bitmap_width;
+        sft_image.height = glyph.bs_bitmap_height;
+
+        if(sft_render(&sft, glyph_info[i].codepoint, sft_image) != 0) {
+          hb_buffer_destroy(buf);
+          return false;
+        }
+
+        if(sft_hmetrics(&sft, glyph_info[i].codepoint, &hmetrics) != 0) {
+          hb_buffer_destroy(buf);
+          bs_bitmap_free(&glyph);
+          return false;
+        }
 
         if(glyph.bs_bitmap_width != 0 && glyph.bs_bitmap_height != 0) {
-          LOG("Offset: HarfBuzz (%d,%d) TrueType (%d, %d)",
+          LOG("Offset: HarfBuzz (%d,%d) TrueType (%lf, %d)",
             glyph_pos[i].x_offset, glyph_pos[i].y_offset,
-            tt_offset_x, tt_offset_y);
+            hmetrics.leftSideBearing, extents.yOffset);
           LOG("Bitmap Size:                    (%d,  %d)", glyph.bs_bitmap_width,
               glyph.bs_bitmap_height);
 
-          /*                     +--- cursor position
-           *                     v
-           *               +--   +----------------+                   --+
-           *               |     |                |                     | p
-           *               |     |                |                     | i
-           *             | |     |                |                     | x
-           * baseline_y1 | |     |                |                     | e
-           *             v |     |                |                     | l
-           *               |     |                |                     | _
-           *               |     |                |                     | h
-           *               |     |     +----------+   --+               | e
-           *               |     |     |          |     | |             | i
-           *               |     |     |          |     | | tt_offset_y | g
-           *               |     |     |  glyph   |     | |             | h
-           * tt_offset_x --+-----+--+  |          |     | |             | t
-           *               |     |  |  |          |     | |             |
-           *               |     |  v  |          |     | v             |
-           *               +--   +-----+ - -  - - +   --+               |
-           * baseline_y0 ^ |     |     |          |                     |
-           *             | |     |     |          |                     |
-           *               +--   +-----+----------+                  ---+
+          /*                         +--- cursor position
+           *                         v
+           *                   +--   +----------------+                --+
+           *                   |     |                |                  | p
+           *                   |     |                |                  | i
+           *                 | |     |                |                  | x
+           *        ascender | |     |                |                  | e
+           *                 v |     |                |                  | l
+           *                   |     |                |                  | _
+           *                   |     |                |                  | h
+           *                   |     |     +----------+   --+            | e
+           *                   |     |     |          |     | |          | i
+           *                   |     |     |          |     | | yOffset  | g
+           *                   |     |     |  glyph   |     | |          | h
+           * leftSideBearing --+-----+--+  |          |     | |          | t
+           *                   |     |  |  |          |     | |          |
+           *                   |     |  v  |          |     | v          |
+           *                   +--   +-----+ - -  - - +   --+            |
+           *       descender ^ |     |     |          |                  |
+           *                 | |     |     |          |                  |
+           *                   +--   +-----+----------+                --+
            *
            * This means the top right corner of the
            * glyph bitmap relative to the cursor position
            * is:
            *
-           *    x: cursor_x + bbox_x0
-           *    y: cursor_y + pixel_height - baseline_y0 + bbox_y0
+           *    x: cursor_x + leftSideBearing
+           *    y: cursor_y + ascender + yOffset
            *
-           * Also refer to the stb_truetype documentation
-           * for this, especially
+           * Also refer to the schrift(3) documentation for this,
+           * especially:
            *
-           *   * stbtt_GetFontBoundingBox
-           *   * stbtt_GetCodepointBitmapBox
-           *   * stbtt_GetCodepointBitmap
-           *   * DETAILED USAGE → Baseline
-           *   * DETAILED USAGE → Displaying a character
-           *     (note however that in the bitmap bounding
-           *     box the coordinate direction is reversed
-           *     and thus “above” means “below”)
+           *   * sft_hmetrics
+           *   * sft_lmetrics
+           *   * sft_extents
+           *
+           * Cursor advancing is entirely done using HarfBuzz.
+           *
+           * There is currently no kerning support, but may or should be
+           * added in the future.
+           *
            */
 
-          int baseline_y0, baseline_y1;
-
-          stbtt_GetFontBoundingBox(font, &abyss, &baseline_y0, &abyss, &baseline_y1);
-          baseline_y0 = round(baseline_y0 * scale_y);
-          baseline_y1 = round(baseline_y1 * scale_y);
-
-          int baseline = baseline_y1;
-
-          if(-baseline_y0 + baseline_y1 > (int) ctx->bs_fonts[font_index].bs_font_pixel_height) {
+          if(lmetrics.ascender - lmetrics.descender > (int) ctx->bs_fonts[font_index].bs_font_pixel_height) {
             LOG("Warn: font is actually higher than pixel size");
-            // possible compromise between top & bottom in this case
-            // which makes zero sense:
-            // baseline = baseline_y0 + baseline_y1;
           }
 
-          LOG("Baseline y0: %d y1: %d", baseline_y0, baseline_y1);
-
-          int offset_x = glyph_pos[i].x_offset + tt_offset_x;
-          int offset_y = glyph_pos[i].y_offset + tt_offset_y + baseline;
+          int offset_x = glyph_pos[i].x_offset + hmetrics.leftSideBearing;
+          int offset_y = glyph_pos[i].y_offset + extents.yOffset + lmetrics.ascender;
 
           LOG("Computed offset: (%d, %d)", offset_x, offset_y);
 

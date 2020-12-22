@@ -5,8 +5,8 @@
 #define BUCHSTABENSUPPE_H
 
 #include <buchstabensuppe/bitmap.h>
-#include <stb_truetype.h>
 
+#include <schrift.h>
 #include <harfbuzz/hb.h>
 
 #include <stdbool.h>
@@ -43,7 +43,7 @@ bs_utf32_buffer_t bs_decode_utf8(const char *, size_t);
 
 typedef struct bs_font {
   hb_font_t      *bs_font_hb;
-  stbtt_fontinfo  bs_font_stbtt;
+  SFT_Font       *bs_font_schrift;
   unsigned char  *bs_font_file;
   size_t          bs_font_file_size;
   unsigned int    bs_font_pixel_height;

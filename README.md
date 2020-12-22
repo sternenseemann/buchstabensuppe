@@ -34,6 +34,9 @@ requirements:
 * Optionally `make` for install script and such
 * [utf8proc](https://juliastrings.github.io/utf8proc)
 * [harfbuzz](harfbuzz.github.io/)
+* [libschrift](https://github.com/tomolt/libschrift),
+  for now the [low-api branch](https://github.com/tomolt/libschrift/tree/low-api)
+  is required which should become version 0.10.0
 
 ```
 # run inside nix-shell if you have nix!
@@ -118,6 +121,4 @@ for more usage details.
 
 * buchstabensuppe loads all fonts into memory and keeps them there pretty much
   all the time.
-* buchstabensuppe uses `stb_truetype` which does
-  [no boundary checking on fonts](https://github.com/nothings/stb/blob/b42009b3b9d4ca35bc703f5310eedc74f584be58/stb_truetype.h#L4-L11),
-  so it is highly inadvisable to use buchstabensuppe with untrusted fonts.
+* there is no support for right to left nor vertical script (but planned)

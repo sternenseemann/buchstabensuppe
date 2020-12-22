@@ -1,8 +1,23 @@
-{ pkgs ? import <nixpkgs> { } }:
+let
+  dev-schrift = self: super: {
+    libschrift = super.libschrift.overrideAttrs (old: {
+      version = "unstable";
+      src = self.fetchFromGitHub {
+        owner = "tomolt";
+        repo = "libschrift";
+        rev = "264dec228166fb20669ebe7deb985d123c2d073a";
+        hash = "sha256-bztleMa1MAF3EPkQKVP4OfZIM7jrcJVBHpEAa08v0d4=";
+      };
+    });
+  };
+in
+
+{ pkgs ? import <nixpkgs> { overlays = [ dev-schrift ]; } }:
 
 let
   gi = pkgs.nix-gitignore;
-  buchstabensuppe = { stdenv, utf8proc, harfbuzz, freetype, redo-c }:
+
+  buchstabensuppe = { stdenv, utf8proc, harfbuzz, libschrift, redo-c }:
     stdenv.mkDerivation rec {
       pname = "buchstabensuppe";
       version = "unstable";
@@ -16,7 +31,7 @@ let
       makeFlags = [ "PREFIX=${placeholder "out"}" ];
 
       nativeBuildInputs = [ redo-c ];
-      buildInputs = [ utf8proc harfbuzz freetype ];
+      buildInputs = [ utf8proc harfbuzz libschrift ];
 
       doCheck = true;
     };
