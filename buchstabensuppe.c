@@ -181,7 +181,10 @@ bs_bitmap_t bs_render_utf8_string(bs_context_t *ctx, const char *s, size_t l) {
     bs_utf32_buffer_t buf = bs_decode_utf8(s, l);
 
     if(errno == 0) {
-      (void) bs_render_utf32_string_append(ctx, &b, &cursor, buf);
+      if(!bs_render_utf32_string_append(ctx, &b, &cursor, buf)) {
+        // TODO, but probably best option because bs_decode_utf8 will return EINVAL
+        errno = EIO;
+      }
     }
 
     bs_utf32_buffer_free(&buf);
