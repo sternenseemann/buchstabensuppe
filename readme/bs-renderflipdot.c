@@ -11,6 +11,7 @@
 #include <unistd.h>
 
 #include <buchstabensuppe.h>
+#include <buchstabensuppe/flipdot.h>
 
 #define DEFAULT_FONT_SIZE 16
 #define DEFAULT_FLIPDOT_WIDTH 80
@@ -67,26 +68,6 @@ void print_usage(const char *name) {
     DEFAULT_FLIPDOT_WIDTH, DEFAULT_FLIPDOT_HEIGHT);
 }
 
-bool scroll_next_view(bs_view_t *view, int flipdot_width) {
-  if(view->bs_view_offset_x >= view->bs_view_bitmap.bs_bitmap_width) {
-    view->bs_view_offset_x = -flipdot_width;
-    return true;
-  } else {
-    view->bs_view_offset_x++;
-    return false;
-  }
-}
-
-bool page_next_view(bs_view_t *view, int flipdot_width) {
-  if(view->bs_view_offset_x + view->bs_view_width
-      >= view->bs_view_bitmap.bs_bitmap_width) {
-    return true;
-  } else {
-    view->bs_view_offset_x += flipdot_width;
-  }
-  return false;
-}
-
 void ignore_signal(int signum) {
   (void) signum;
 }
@@ -138,11 +119,6 @@ bool render_flipdot(const char *host, const char *port, int family, const char *
       mode == RENDER_PAGE;
     bool finished = false;
 
-    // render first frame immediately
-
-    size_t bits_size;
-    uint8_t *bits = bs_view_bitarray(view, &bits_size, invert);
-
     if(multiple_frames) {
       // TODO use sigaction
       // TODO handle SIGINT and SIGTERM
@@ -152,31 +128,23 @@ bool render_flipdot(const char *host, const char *port, int family, const char *
     }
 
     while(!finished && !failure) {
-      if(bits == NULL) {
-        failure = true;
-        break;
-      }
-
-      failure = sendto(sockfd, bits, bits_size, 0,
-          addrs->ai_addr, addrs->ai_addrlen) != (ssize_t) bits_size;
+      failure = bs_flipdot_render(sockfd, addrs->ai_addr,
+        addrs->ai_addrlen, view, invert) != 0;
 
       if(multiple_frames) {
         // restore handler which is removed by sendto
         signal(SIGALRM, ignore_signal);
       }
 
-      free(bits);
-
       if(mode == RENDER_SCROLL) {
-        finished = scroll_next_view(&view, flipdot_width);
+        finished = bs_scroll_next_view(&view, 1, BS_DIMENSION_X);
       } else if(mode == RENDER_PAGE) {
-        finished = page_next_view(&view, flipdot_width);
+        finished = bs_page_next_view(&view, 1, BS_DIMENSION_X);
       }
 
       if(!multiple_frames) {
         finished = true;
       } else if(!finished) {
-        bits = bs_view_bitarray(view, &bits_size, invert);
         pause();
       }
     }
