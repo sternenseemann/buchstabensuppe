@@ -20,6 +20,7 @@ install:
 	install -Dm755 bs-renderflipdot.exe $(BINDIR)/bs-renderflipdot
 	install -Dm644 include/buchstabensuppe.h -t $(INCDIR)
 	install -Dm644 include/buchstabensuppe/bitmap.h -t $(INCDIR)/buchstabensuppe
+	install -Dm644 include/buchstabensuppe/flipdot.h -t $(INCDIR)/buchstabensuppe
 	install -Dm644 third_party/stb/stb_truetype.h -t $(INCDIR)
 	install -Dm644 libbuchstabensuppe.a -t $(LIBDIR)
 	install -Dm644 doc/man/bs-renderflipdot.1 -t $(MANDIR)/man1

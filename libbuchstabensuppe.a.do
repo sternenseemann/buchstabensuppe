@@ -1,7 +1,7 @@
 source ./build_config
 redo-ifchange ./build_config
 
-OBJS="third_party/stb_truetype.o bitmap.o buchstabensuppe.o"
+OBJS="third_party/stb_truetype.o bitmap.o buchstabensuppe.o flipdot.o"
 redo-ifchange $OBJS
 
 tmp_dir="$(mktemp -d)"

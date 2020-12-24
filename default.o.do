@@ -23,6 +23,9 @@ case "$2" in
   bitmap)
     redo-ifchange util.h
     ;;
+  flipdot)
+    redo-ifchange include/buchstabensuppe/bitmap.h
+    ;;
   *)
 esac
 
