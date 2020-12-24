@@ -13,18 +13,19 @@ done
 
 case "$2" in
   buchstabensuppe)
-    redo-ifchange third_party/stb/stb_truetype.h
-    redo-ifchange include/buchstabensuppe/bitmap.h
+    redo-ifchange third_party/stb_truetype.o
+    redo-ifchange bitmap.o
     ;;
   bs-renderflipdot)
-    redo-ifchange include/buchstabensuppe/bitmap.h
-    redo-ifchange include/buchstabensuppe.h
+    redo-ifchange bitmap.o
+    redo-ifchange buchstabensuppe.o
+    redo-ifchange flipdot.o
     ;;
   bitmap)
     redo-ifchange util.h
     ;;
   flipdot)
-    redo-ifchange include/buchstabensuppe/bitmap.h
+    redo-ifchange bitmap.o
     ;;
   *)
 esac
