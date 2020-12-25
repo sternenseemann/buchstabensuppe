@@ -114,8 +114,10 @@ how to interact with a flipdot display. mainly it involves:</p>
 <li>making sure that the dimensions of the display and the image
 match with <code>bs_bitmap_extend</code></li>
 <li>processing the resulting bitmap using <code>bs_bitmap_map</code></li>
-<li>producing a compacted bitmap array for the display
-using <code>bs_view_bitarray</code> ready to sent via UDP</li>
+<li>rendering the resulting bitmap on the display using
+<code>bs_flipdot_render</code>.</li>
+<li>dealing with bitmaps too big for the display using
+<code>bs_scroll_next_view</code> and <code>bs_page_next_view</code>.</li>
 </ul>
 
 <p>you can also play around with its cli: the following command
