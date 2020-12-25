@@ -6,14 +6,12 @@
 
 #include <buchstabensuppe/bitmap.h>
 
-#include "util.h"
-
 bool bs_bitmap_extend(bs_bitmap_t *b, int new_w, int new_h, unsigned char init) {
-  int diff_x = MAX(new_w - b->bs_bitmap_width, 0);
-  int diff_y = MAX(new_h - b->bs_bitmap_height, 0);
+  int diff_x = fmax(new_w - b->bs_bitmap_width, 0);
+  int diff_y = fmax(new_h - b->bs_bitmap_height, 0);
 
-  new_w = MAX(new_w, b->bs_bitmap_width);
-  new_h = MAX(new_h, b->bs_bitmap_height);
+  new_w = fmax(new_w, b->bs_bitmap_width);
+  new_h = fmax(new_h, b->bs_bitmap_height);
 
   if(diff_y == 0 && diff_x == 0) {
     return true;
@@ -117,11 +115,11 @@ void bs_bitmap_copy(bs_bitmap_t dst, int offset_x, int offset_y, bs_bitmap_t src
   // TODO optimized implementation for when widths are equal
   // and offset_x == 0
 
-  int src_min_y = MAX(0, (-1) * offset_y);
-  int src_max_y = MIN(dst.bs_bitmap_height - offset_y, src.bs_bitmap_height);
+  int src_min_y = fmax(0, (-1) * offset_y);
+  int src_max_y = fmin(dst.bs_bitmap_height - offset_y, src.bs_bitmap_height);
 
-  int src_min_x = MAX(0, (-1) * offset_x);
-  int src_max_x = MIN(dst.bs_bitmap_width - offset_x, src.bs_bitmap_width);
+  int src_min_x = fmax(0, (-1) * offset_x);
+  int src_max_x = fmin(dst.bs_bitmap_width - offset_x, src.bs_bitmap_width);
 
   for(int y = src_min_y; y < src_max_y; y++) {
     int dst_y = y + offset_y;
@@ -166,7 +164,7 @@ uint8_t *bs_view_bitarray(bs_view_t view, size_t *size, unsigned char def) {
   for(int y = view.bs_view_offset_y; y < view_max_y; y++) {
     for(int x = view.bs_view_offset_x; x < view_max_x; x = x + 8) {
       uint8_t byte = 0;
-      int max_i = MIN(8, view_max_x - x);
+      int max_i = fmin(8, view_max_x - x);
 
       for(int i = 0; i < max_i; i++) {
         // reduce pixel to a single bit works regardless of monospace and

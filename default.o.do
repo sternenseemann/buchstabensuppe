@@ -21,9 +21,6 @@ case "$2" in
     redo-ifchange buchstabensuppe.o
     redo-ifchange flipdot.o
     ;;
-  bitmap)
-    redo-ifchange util.h
-    ;;
   flipdot)
     redo-ifchange bitmap.o
     ;;
