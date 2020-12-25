@@ -99,8 +99,10 @@ how to interact with a flipdot display. mainly it involves:
 * making sure that the dimensions of the display and the image
   match with `bs_bitmap_extend`
 * processing the resulting bitmap using `bs_bitmap_map`
-* producing a compacted bitmap array for the display
-  using `bs_view_bitarray` ready to sent via UDP
+* rendering the resulting bitmap on the display using
+  `bs_flipdot_render`.
+* dealing with bitmaps too big for the display using
+  `bs_scroll_next_view` and `bs_page_next_view`.
 
 you can also play around with its cli: the following command
 renders “Hello World” black on white using GNU Unifont onto
