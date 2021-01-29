@@ -34,9 +34,7 @@ requirements:
 * Optionally `make` for install script and such
 * [utf8proc](https://juliastrings.github.io/utf8proc)
 * [harfbuzz](harfbuzz.github.io/)
-* [libschrift](https://github.com/tomolt/libschrift),
-  for now the [low-api branch](https://github.com/tomolt/libschrift/tree/low-api)
-  is required which should become version 0.10.0
+* [libschrift](https://github.com/tomolt/libschrift) == 0.10.0
 
 ```
 # run inside nix-shell if you have nix!
