@@ -1,208 +1,37 @@
-{ pkgs ? (import <nixpkgs> {}) }:
+{ depotSrc ? builtins.fetchGit {
+    url = "https://code.tvl.fyi";
+    ref = "canon";
+    rev = "2cd2b58a04cd86e8bf1d72e9c0a67ad8c8e9c8dd";
+  }
+}:
 
 let
-  manPages = [
-    { name = "bs-renderflipdot"; section = 1; }
-  ];
-
-  readmeDeps = [
-    "bs-renderflipdot.c"
-    "doc/flipdot-render.png"
-  ];
-
-  lib = pkgs.lib;
-  root = ./..;
-  repoRoot = builtins.path {
-    name = "buchstabensuppe-src";
-    path = root;
-    filter = pkgs.nix-gitignore.gitignoreFilter
-      (builtins.readFile ./../.gitignore) root;
-  };
-
-  # TODO: man inclusion -Oman
-  buildManPage = { name, section }:
-    let
-      out = "$out/man/${name}.${toString section}.html";
-    in ''
-      echo ${lib.escapeShellArg (commonHead 1 "${name}(${toString section})")} \
-        > ${out}
-      echo "<main>" >> ${out}
-      ${pkgs.mandoc}/bin/mandoc -Thtml -Ofragment \
-        ${repoRoot}/doc/man/${name}.${toString section} \
-        >> ${out}
-      echo "</main></body></html>" >> ${out}
-    '';
-
-  readme = pkgs.runCommandLocal "README.html" {} ''
-    echo ${lib.escapeShellArg (commonHead 1 "buchstabensuppe/README")} > $out
-    echo "<body><main>" >> $out
-    ${pkgs.lowdown}/bin/lowdown ${repoRoot}/README.md >> $out
-    echo "</main></body></html>" >> $out
-  '';
-
-  normalize = pkgs.fetchurl {
-    url = "https://necolas.github.io/normalize.css/8.0.1/normalize.css";
-    sha256 = "04jmvybwh2ks4dlnfa70sb3a3z3ig4cv0ya9rizjvm140xq1h22q";
-  };
-
-  style = pkgs.writeText "style.css" ''
-    body {
-      font-size: 1em;
-      font-family: serif;
-      background-color: #efefef;
-      line-height: 1.5;
-    }
-
-    h1, h2, h3, h4, h5, h6 {
-      font-family: 'Source Sans Pro', 'Open Sans', sans-serif;
-    }
-
-    a:link, a:visited {
-      color: #3e7eff;
-    }
-
-    header, main, footer {
-      margin-top: 0;
-      margin-bottom: 0;
-      margin-left: auto;
-      margin-right: auto;
-      max-width: 800px;
-      background-color: white;
-      padding: 5px 10px;
-    }
-
-    /* markdown */
-
-    pre {
-      background-color: #efefef;
-      overflow: auto;
-      padding: 10px;
-    }
-
-    img {
-      max-width: 100%;
-    }
-
-    blockquote {
-      border-left: 5px solid #efefef;
-      margin-left: 0;
-      padding-left: 10px;
-    }
-
-    /* man page related */
-    table.head, table.foot {
-      width: 100%;
-    }
-
-    table.head {
-      padding-bottom: 20px;
-    }
-
-    table.foot {
-      padding-top: 20px;
-    }
-
-    table.head td, table.foot td {
-      text-align: center;
-      padding: 0;
-    }
-
-    table.head td:nth-last-child(1),
-    table.foot td:nth-last-child(1) {
-      text-align: right;
-    }
-
-    table.head td:nth-child(1),
-    table.foot td:nth-child(1) {
-      text-align: left;
-    }
-  '';
-
-  commonHead = depth: title:
-    let
-      styleDir = lib.concatStrings (builtins.genList (x: "../") depth);
-    in ''
-    <!doctype html>
-    <html lang="en">
-      <head>
-        <meta charset="utf-8">
-        <title>${title}</title>
-        <link rel="stylesheet" type="text/css" href="${styleDir}style.css">
-      </head>
-  '';
-
-  index = pkgs.writeText "index.html" ''
-      ${commonHead 0 "buchstabensuppe"}
-      <body>
-        <header>
-          <h1>buchstabensuppe</h1>
-          <nav>
-            <ul>
-              <li>
-                <a href="https://code.sterni.lv/buchstabensuppe/">
-                  Source (Mirror)
-                </a>
-              </li>
-              <li>
-                <a href="https://github.com/sternenseemann/buchstabensuppe">
-                  Source (Github)
-                </a>
-              </li>
-            </ul>
-          </nav>
-        </header>
-        <main>
-          <section>
-            <h2>description</h2>
-            <p>
-              buchstabensuppe is a simple font rendering library intended
-              for rendering fonts for binary black and white displays
-              with low resolutions, for example
-              <a href="https://wiki.openlab-augsburg.de/Flipdots">
-                OpenLab's flipdot display
-              </a>. The goal is to implement font rendering that
-              is adequate for the situation and as correct as possible
-              (e. g. do text shaping, …).
-            </p>
-            <p>
-              Documentation is still a bit sparse, but shall be improved.
-              For now most information is in the
-              <a href="readme/README.html">README</a>.
-            </p>
-          </section>
-          </section>
-          <section>
-            <h2>man pages</h2>
-
-            <ul>
-              ${lib.concatMapStrings ({ name, section }: ''
-                  <li>
-                    <a href="man/${name}.${toString section}.html">
-                      ${name}(${toString section})
-                    </a>
-                  </li>
-                '') manPages}
-            </ul>
-          </section>
-        </main>
-      </body>
-    </html>
-  '';
-
+  depot = import depotSrc { };
 in
 
-pkgs.runCommandLocal "buchstabensuppe-web" {} ''
-  mkdir -p $out/man
-  mkdir -p $out/readme
-  cat ${normalize} ${style} > $out/style.css
-  cp ${index} $out/index.html
+depot.users.sterni.htmlman {
+  title = "buchstabensuppe";
+  pages = [
+    {
+      name = "bs-renderflipdot";
+      section = 1;
+    }
+  ];
+  manDir = ./man;
+  description = ''
+    * [Source (GitHub)](https://github.com/sternenseemann/buchstabensuppe)
+    * [Source (Mirror)](https://code.sterni.lv/buchstabensuppe/)
 
-  ${lib.concatMapStrings buildManPage manPages}
+    buchstabensuppe is a simple font rendering library intended
+    for rendering fonts on binary black and white displays
+    with low resolutions, for example
+    [OpenLab's flipdot display](https://wiki.openlab-augsburg.de/Flipdots).
+    The goal is to implement font rendering that
+    is adequate for the situation and as correct as possible
+    (e. g. does text shaping, …).
 
-  cp ${readme} $out/readme/README.html
-
-  ${lib.concatMapStrings (dep: ''
-      mkdir -p "$(dirname "$out/readme/${dep}")"
-      cp "${repoRoot}/${dep}" "$out/readme/${dep}"
-    '') readmeDeps}
-''
+    Documentation is still a bit sparse, but shall be improved.
+    For now most information is in the
+    [README](https://github.com/sternenseemann/buchstabensuppe/blob/main/README.md).
+  '';
+}

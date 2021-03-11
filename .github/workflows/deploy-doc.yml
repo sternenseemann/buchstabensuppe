@@ -16,12 +16,10 @@ jobs:
         with:
           name: buchstabensuppe
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      # permission change taken from curry-club-augsburg.de
       - name: Build web output
         run: |
-          nix-build doc/web.nix
-          cp -RL result tmp
-          chmod -R +w tmp
+          nix-build -A deploy doc/web.nix
+          ./result -w tmp
       - name: Deploy output to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@3.7.1
         with:

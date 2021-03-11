@@ -108,7 +108,7 @@ how to interact with a flipdot display. mainly it involves:
 you can also play around with its cli: the following command
 renders “Hello World” black on white using GNU Unifont onto
 a flipdot display (or simulator) running on `localhost:2323`.
-See [bs-renderflipdot(1)](https://sternenseemann.github.io/buchstabensuppe/man/bs-renderflipdot.1.html)
+See [bs-renderflipdot(1)](https://sternenseemann.github.io/buchstabensuppe/bs-renderflipdot.1.html)
 for more usage details.
 
 ```
