@@ -349,71 +349,46 @@ template {
 }
 body {
   font-size: 1em;
+  line-height: 1.5;
   font-family: serif;
   background-color: #efefef;
-  line-height: 1.5;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: 'Source Sans Pro', 'Open Sans', sans-serif;
+  font-family: sans-serif;
+  font-size: 1em;
+  margin: 5px 0;
+}
+
+h1 {
+  margin-top: 0;
 }
 
 a:link, a:visited {
   color: #3e7eff;
 }
 
-header, main, footer {
-  margin-top: 0;
-  margin-bottom: 0;
-  margin-left: auto;
-  margin-right: auto;
+h1 a, h2 a, h3 a, h4 a, h5 a, h6 a {
+  text-decoration: none;
+}
+
+.manual-text, .index-text {
+  padding: 20px;
   max-width: 800px;
   background-color: white;
-  padding: 5px 10px;
+  margin: 0 auto;
 }
 
-/* markdown */
-
-pre {
-  background-color: #efefef;
-  overflow: auto;
-  padding: 10px;
-}
-
-img {
-  max-width: 100%;
-}
-
-blockquote {
-  border-left: 5px solid #efefef;
-  margin-left: 0;
-  padding-left: 10px;
-}
-
-/* man page related */
 table.head, table.foot {
-  width: 100%;
+  display: none;
 }
 
-table.head {
-  padding-bottom: 20px;
+.Nd {
+  display: inline;
 }
 
-table.foot {
-  padding-top: 20px;
-}
-
-table.head td, table.foot td {
-  text-align: center;
-  padding: 0;
-}
-
-table.head td:nth-last-child(1),
-table.foot td:nth-last-child(1) {
-  text-align: right;
-}
-
-table.head td:nth-child(1),
-table.foot td:nth-child(1) {
-  text-align: left;
+/* use same as cheddar for man pages */
+pre {
+  padding: 16px;
+  background-color: #f6f8fa;
 }
