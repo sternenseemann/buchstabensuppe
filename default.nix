@@ -1,18 +1,4 @@
-let
-  dev-schrift = self: super: {
-    libschrift = super.libschrift.overrideAttrs (old: {
-      version = "unstable";
-      src = self.fetchFromGitHub {
-        owner = "tomolt";
-        repo = "libschrift";
-        rev = "264dec228166fb20669ebe7deb985d123c2d073a";
-        hash = "sha256-bztleMa1MAF3EPkQKVP4OfZIM7jrcJVBHpEAa08v0d4=";
-      };
-    });
-  };
-in
-
-{ pkgs ? import <nixpkgs> { overlays = [ dev-schrift ]; } }:
+{ pkgs ? import <nixpkgs> { } }:
 
 let
   gi = pkgs.nix-gitignore;
