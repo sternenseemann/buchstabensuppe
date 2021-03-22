@@ -6,9 +6,6 @@
 
 #include <buchstabensuppe/bitmap.h>
 
-#include <schrift.h>
-#include <harfbuzz/hb.h>
-
 #include <stdbool.h>
 #include <stddef.h>
 
@@ -40,6 +37,9 @@ bs_utf32_buffer_t bs_decode_utf8(const char *, size_t);
  * @name Font Rendering
  * @{
  */
+
+typedef struct hb_font_t hb_font_t;
+typedef struct SFT_Font SFT_Font;
 
 typedef struct bs_font {
   hb_font_t      *bs_font_hb;
