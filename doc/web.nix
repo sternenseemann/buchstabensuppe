@@ -1,7 +1,7 @@
 { depotSrc ? builtins.fetchGit {
     url = "https://code.tvl.fyi";
     ref = "canon";
-    rev = "2cd2b58a04cd86e8bf1d72e9c0a67ad8c8e9c8dd";
+    rev = "0e3858b5e5bb5717319c5a17fb195c51f1cbf06c";
   }
 }:
 
@@ -34,4 +34,5 @@ depot.users.sterni.htmlman {
     For now most information is in the
     [README](https://github.com/sternenseemann/buchstabensuppe/blob/main/README.md).
   '';
+  linkXr = "none"; # TODO(sterni): add the remaining man pages
 }
