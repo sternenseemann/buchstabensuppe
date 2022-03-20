@@ -282,20 +282,19 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
       }
 
       for(unsigned int i = 0; i < glyph_count; i++) {
-        struct SFT_HMetrics hmetrics;
-        struct SFT_Extents  extents;
+        struct SFT_GMetrics gmetrics;
         struct SFT_Image    sft_image;
 
-        if(sft_extents(&sft, glyph_info[i].codepoint, &extents) != 0) {
+        if(sft_gmetrics(&sft, glyph_info[i].codepoint, &gmetrics) != 0) {
           hb_buffer_destroy(buf);
           return false;
         }
 
         // allocate manually since we don't need to initialize the memory
         bs_bitmap_t glyph;
-        glyph.bs_bitmap = malloc(extents.minWidth * extents.minHeight);
-        glyph.bs_bitmap_width = extents.minWidth;
-        glyph.bs_bitmap_height = extents.minHeight;
+        glyph.bs_bitmap = malloc(gmetrics.minWidth * gmetrics.minHeight);
+        glyph.bs_bitmap_width = gmetrics.minWidth;
+        glyph.bs_bitmap_height = gmetrics.minHeight;
 
         if(glyph.bs_bitmap == NULL) {
           hb_buffer_destroy(buf);
@@ -309,11 +308,6 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
 
         if(sft_render(&sft, glyph_info[i].codepoint, sft_image) != 0) {
           hb_buffer_destroy(buf);
-          return false;
-        }
-
-        if(sft_hmetrics(&sft, glyph_info[i].codepoint, &hmetrics) != 0) {
-          hb_buffer_destroy(buf);
           bs_bitmap_free(&glyph);
           return false;
         }
@@ -321,7 +315,7 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
         if(glyph.bs_bitmap_width != 0 && glyph.bs_bitmap_height != 0) {
           LOG("Offset: HarfBuzz (%d,%d) TrueType (%lf, %d)",
             glyph_pos[i].x_offset, glyph_pos[i].y_offset,
-            hmetrics.leftSideBearing, extents.yOffset);
+            gmetrics.leftSideBearing, gmetrics.yOffset);
           LOG("Bitmap Size:                    (%d,  %d)", glyph.bs_bitmap_width,
               glyph.bs_bitmap_height);
 
@@ -357,9 +351,8 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
            * Also refer to the schrift(3) documentation for this,
            * especially:
            *
-           *   * sft_hmetrics
+           *   * sft_gmetrics
            *   * sft_lmetrics
-           *   * sft_extents
            *
            * Cursor advancing is entirely done using HarfBuzz.
            *
@@ -372,8 +365,8 @@ bool bs_render_grapheme_append(bs_context_t *ctx, bs_bitmap_t *target, bs_cursor
             LOG("Warn: font is actually higher than pixel size");
           }
 
-          int offset_x = glyph_pos[i].x_offset + hmetrics.leftSideBearing;
-          int offset_y = glyph_pos[i].y_offset + extents.yOffset + lmetrics.ascender;
+          int offset_x = glyph_pos[i].x_offset + gmetrics.leftSideBearing;
+          int offset_y = glyph_pos[i].y_offset + gmetrics.yOffset + lmetrics.ascender;
 
           LOG("Computed offset: (%d, %d)", offset_x, offset_y);
 

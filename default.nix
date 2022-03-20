@@ -1,5 +1,7 @@
 { pkgs ? import <nixpkgs> { } }:
 
+assert pkgs.lib.versionAtLeast pkgs.libschrift.version "0.10.1";
+
 let
   gi = pkgs.nix-gitignore;
 
