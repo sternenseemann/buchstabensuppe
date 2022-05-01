@@ -20,6 +20,8 @@ let
 
       buildInputs = [ utf8proc harfbuzz libschrift ];
 
+      outputs = [ "out" "lib" "dev" "man" ];
+
       doCheck = true;
     };
 in
