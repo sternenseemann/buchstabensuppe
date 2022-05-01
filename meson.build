@@ -32,6 +32,10 @@ install_headers(
   'include/buchstabensuppe/bitmap.h',
   subdir : 'buchstabensuppe',
 )
+pc.generate(
+  lib,
+  description : 'A toy font rendering library for high contrast, low pixel count displays',
+)
 
 executable(
   'bs-renderflipdot',
