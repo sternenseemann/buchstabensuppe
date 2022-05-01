@@ -1,11 +1,5 @@
 result*
-*.o
-*.a
-/*.exe
-
-.dep**
-.target.*
-.lock.*
+/build
 
 # directory used to store fonts for testing
 /fonts
