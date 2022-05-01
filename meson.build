@@ -5,6 +5,9 @@ project(
   default_options: ['c_std=c99'],
 )
 
+# Necessary for bs-renderflipdot
+add_project_arguments(['-D_POSIX_C_SOURCE=200112L'], language : 'c')
+
 cc = meson.get_compiler('c')
 pc = import('pkgconfig')
 

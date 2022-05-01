@@ -1,4 +1,3 @@
-#define _POSIX_C_SOURCE 200112L /* getopt, getaddrinfo, ... */
 #include <errno.h>
 #include <netdb.h>
 #include <signal.h>
