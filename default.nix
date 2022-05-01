@@ -5,7 +5,7 @@ assert pkgs.lib.versionAtLeast pkgs.libschrift.version "0.10.1";
 let
   gi = pkgs.nix-gitignore;
 
-  buchstabensuppe = { stdenv, utf8proc, harfbuzz, libschrift, redo-c }:
+  buchstabensuppe = { stdenv, utf8proc, harfbuzz, libschrift, meson, ninja, pkg-config }:
     stdenv.mkDerivation rec {
       pname = "buchstabensuppe";
       version = "unstable";
@@ -16,9 +16,8 @@ let
         filter = gi.gitignoreFilter (builtins.readFile ./.gitignore) ./.;
       };
 
-      makeFlags = [ "PREFIX=${placeholder "out"}" ];
+      nativeBuildInputs = [ meson ninja pkg-config ];
 
-      nativeBuildInputs = [ redo-c ];
       buildInputs = [ utf8proc harfbuzz libschrift ];
 
       doCheck = true;
