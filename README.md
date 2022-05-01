@@ -30,23 +30,20 @@ i. e. [openlab's flipdot display](https://wiki.openlab-augsburg.de/Flipdots).
 
 requirements:
 
-* [redo-c](https://github.com/leahneukirchen/redo-c)
-* Optionally `make` for install script and such
+* [meson](https://mesonbuild.com)
+* [ninja](https://ninja-build.org/)
 * [utf8proc](https://juliastrings.github.io/utf8proc)
-* [harfbuzz](harfbuzz.github.io/)
+* [harfbuzz](https://harfbuzz.github.io/)
 * [libschrift](https://github.com/tomolt/libschrift) == 0.10.1
 
 ```
 # run inside nix-shell if you have nix!
 
-# static library
-$ redo libbuchstabensuppe.a
+$ meson build
 
-# demo binary
-$ redo bs-renderflipdot.exe
+$ cd build
 
-# tests
-$ redo test.exe && ./test.exe
+$ ninja
 ```
 
 alternatively you can just run `nix-build`
@@ -54,14 +51,14 @@ alternatively you can just run `nix-build`
 ## demo
 
 if you want to play around with the font rendering in binary
-mode you can use the dry run mode of the supplied `./bs-renderflipdot.exe`
-(or `./result/bin/bs-renderflipdot` if you use nix) binary.
+mode you can use the dry run mode of the `bs-renderflipdot`
+(in `./result/bin` with Nix, `./build` with meson) binary.
 
-Run `./bs-renderflipdot.exe -?` for usage instructions and don't forget `-n`
+Run `bs-renderflipdot -?` for usage instructions and don't forget `-n`
 for dry running!
 
 ```
-$ ./bs-renderflipdot.exe -f fonts/unifont.ttf -f fonts/unifont_upper.ttf -n "Greetings ❣️" 2>/dev/null
+$ bs-renderflipdot -f /path/to/unifont.ttf -f /path/to/unifont_upper.ttf -n "Greetings ❣️" 2>/dev/null
                                                                                             
                                                                                     ███ ███ 
                                                                                    █████████
@@ -112,7 +109,7 @@ See [bs-renderflipdot(1)](https://sternenseemann.github.io/buchstabensuppe/bs-re
 for more usage details.
 
 ```
-./bs-renderflipdot.exe -f /path/to/unifont.ttf -f /path/to/unifont_upper.ttf -i "Hello World"
+bs-renderflipdot -f /path/to/unifont.ttf -f /path/to/unifont_upper.ttf -i "Hello World"
 ```
 
 ## caveats
