@@ -1,4 +1,3 @@
-#*.ttf
 result*
 *.o
 *.a
@@ -7,3 +6,6 @@ result*
 .dep**
 .target.*
 .lock.*
+
+# directory used to store fonts for testing
+/fonts
