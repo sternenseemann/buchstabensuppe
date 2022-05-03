@@ -30,11 +30,6 @@ lib = library(
   install : true,
 )
 install_headers('include/buchstabensuppe.h')
-install_headers(
-  'include/buchstabensuppe/flipdot.h',
-  'include/buchstabensuppe/bitmap.h',
-  subdir : 'buchstabensuppe',
-)
 pc.generate(
   lib,
   description : 'A toy font rendering library for high contrast, low pixel count displays',
