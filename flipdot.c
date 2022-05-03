@@ -1,7 +1,7 @@
 #include <errno.h>
 #include <stdlib.h>
 
-#include <buchstabensuppe/flipdot.h>
+#include <buchstabensuppe.h>
 
 bool bs_scroll_next_view(bs_view_t *view, int step, enum bs_dimension dim) {
   if(step == 0) {

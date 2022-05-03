@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <buchstabensuppe/bitmap.h>
+#include <buchstabensuppe.h>
 
 bool bs_bitmap_extend(bs_bitmap_t *b, int new_w, int new_h, unsigned char init) {
   int diff_x = fmax(new_w - b->bs_bitmap_width, 0);
