@@ -34,4 +34,18 @@ in
   buchstabensuppe =
     assert self.lib.versionAtLeast self.libschrift.version "0.10.1";
     self.callPackage buchstabensuppe { };
+
+  haskell = super.haskell // {
+    packageOverrides = self.lib.composeExtensions super.haskell.packageOverrides (
+      hsSelf: hsSuper: {
+        haskell-buchstabensuppe = self.haskell.lib.compose.overrideSrc {
+          version = "unstable";
+          # Ignore some extra files to avoid unnecessary rebuilds
+          src = gi.gitignoreSource [
+            "shell.nix"
+          ] ./bindings/hs;
+        } (hsSelf.callCabal2nix "haskell-buchstabensuppe" ./bindings/hs { });
+      }
+    );
+  };
 }

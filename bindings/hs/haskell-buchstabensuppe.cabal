@@ -1,0 +1,65 @@
+cabal-version: 2.4
+name: haskell-buchstabensuppe
+version: 0.0.0.0
+
+synopsis: Bindings to the buchstabensuppe font rendering library
+description:
+  Bindings to buchstabensuppe, a toy font rendering library
+  for high contrast, low pixel count displays
+
+bug-reports: https://github.com/sternenseemann/buchstabensuppe/issues
+homepage: https://github.com/sternenseemann/buchstabensuppe
+
+license: BSD-3-Clause
+author: sternenseemann
+maintainer: sternenseemann@systemli.org
+
+extra-source-files: CHANGELOG.md
+
+category: Graphics
+
+common basic-settings
+    ghc-options:
+      -Wall -Weverything
+      -Wno-missing-import-lists
+      -Wno-implicit-prelude
+      -Wno-unsafe
+      -Wno-all-missed-specialisations
+      -Wno-prepositive-qualified-module
+    default-language: Haskell2010
+
+library
+    import: basic-settings
+    exposed-modules:
+        Graphics.Buchstabensuppe
+      , Graphics.Buchstabensuppe.Buffer.UTF32
+
+    hs-source-dirs: src
+
+    build-depends:
+        base >=4.15 && <4.16
+      , utf8-light >= 0.3 && < 0.5
+      , bytestring >= 0.10 && < 0.12
+      , text ^>= 1.2 || ^>= 2.0
+
+    pkgconfig-depends:  buchstabensuppe
+
+    include-dirs: cbits
+    c-sources: cbits/buchstabensuppe-wrapper.c
+
+test-suite unit-tests
+    import: basic-settings
+    type: exitcode-stdio-1.0
+    main-is: Main.hs
+    other-modules:
+        Test.Buchstabensuppe.Buffers
+    hs-source-dirs: test
+    build-depends:
+        base
+      , haskell-buchstabensuppe
+      , tasty ^>= 1.4
+      , tasty-quickcheck ^>= 0.10
+      , QuickCheck
+      , text
+      , bytestring
+    ghc-options: -Wno-missing-safe-haskell-mode

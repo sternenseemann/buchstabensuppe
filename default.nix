@@ -6,4 +6,8 @@ let
   };
 in
 
-pkgs.buchstabensuppe
+pkgs.buchstabensuppe.overrideAttrs (old: {
+  passthru = old.passthru or {} // {
+    inherit (pkgs.haskellPackages) haskell-buchstabensuppe;
+  };
+})
