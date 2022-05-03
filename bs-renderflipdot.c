@@ -11,7 +11,6 @@
 #include <unistd.h>
 
 #include <buchstabensuppe.h>
-#include <buchstabensuppe/flipdot.h>
 
 #define DEFAULT_FONT_SIZE 16
 #define DEFAULT_FLIPDOT_WIDTH 80
