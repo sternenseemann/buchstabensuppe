@@ -1,0 +1,1 @@
+module Graphics.Buchstabensuppe () where

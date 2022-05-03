@@ -1,9 +1,5 @@
-#*.ttf
 result*
-*.o
-*.a
-/*.exe
+/build
 
-.dep**
-.target.*
-.lock.*
+# directory used to store fonts for testing
+/fonts

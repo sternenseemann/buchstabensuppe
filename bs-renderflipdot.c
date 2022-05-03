@@ -1,4 +1,3 @@
-#define _POSIX_C_SOURCE 200112L /* getopt, getaddrinfo, ... */
 #include <errno.h>
 #include <netdb.h>
 #include <signal.h>
@@ -11,7 +10,6 @@
 #include <unistd.h>
 
 #include <buchstabensuppe.h>
-#include <buchstabensuppe/flipdot.h>
 
 #define DEFAULT_FONT_SIZE 16
 #define DEFAULT_FLIPDOT_WIDTH 80

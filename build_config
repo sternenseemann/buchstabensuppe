@@ -1,7 +1,0 @@
-AR=ar
-RANLIB=ranlib
-CC=cc
-CFLAGS="-W -Wall -Wextra -pedantic -Os -std=c99 -g"
-CFLAGS="$CFLAGS -Iinclude"
-
-# vim: ft=sh
