@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <link rel="stylesheet" href="style.css" type="text/css" media="all"/>
   <title>BS-RENDERFLIPDOT(1)</title>
 </head>
@@ -16,8 +17,8 @@
 <div class="manual-text">
 <section class="Sh">
 <h1 class="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
-<code class="Nm">bs-renderflipdot</code> &#x2014;
-<div class="Nd">Render for and send text to a flipdot display</div>
+<p class="Pp"><code class="Nm">bs-renderflipdot</code> &#x2014;
+    <span class="Nd">Render for and send text to a flipdot display</span></p>
 </section>
 <section class="Sh">
 <h1 class="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
@@ -41,69 +42,74 @@
 </section>
 <section class="Sh">
 <h1 class="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
-<code class="Nm">bs-renderflipdot</code> uses
-  <a class="Xr">buchstabensuppe(3)</a> to render a given string onto a binary
-  bitmap. It additionally has the ability to send the resulting bitmap to a
-  flipdot display via its common UDP protocol which can be disabled using the
-  <code class="Fl">-n</code> option.
+<p class="Pp"><code class="Nm">bs-renderflipdot</code> uses
+    <a class="Xr">buchstabensuppe(3)</a> to render a given string onto a binary
+    bitmap. It additionally has the ability to send the resulting bitmap to a
+    flipdot display via its common UDP protocol which can be disabled using the
+    <code class="Fl">-n</code> option.</p>
 <p class="Pp">The full list of options is as follows:</p>
 <dl class="Bl-tag">
-  <dt><a class="permalink" href="#n"><code class="Fl" id="n">-n</code></a></dt>
+  <dt id="n"><a class="permalink" href="#n"><code class="Fl">-n</code></a></dt>
   <dd>Dry run. Disables sending the rendered bitmap to a flipdot display via UDP
       which is useful if you just want to render a string to stdout.</dd>
-  <dt><a class="permalink" href="#i"><code class="Fl" id="i">-i</code></a></dt>
+  <dt id="i"><a class="permalink" href="#i"><code class="Fl">-i</code></a></dt>
   <dd>Render inverted. By default the resulting bitmap is rendered white on
       black, by passing <code class="Fl">-i</code> it is inverted to be black on
       white. <code class="Fl">-s</code> <var class="Ar">size</var> Specify the
       font size in pixels. When this option is given it affects all fonts that
-      are added <i class="Em">after</i> the <code class="Fl">-s</code> option.
-      If it is missing, the default size of <b class="Sy">16</b> is used. Can be
-      used multiple times.</dd>
-  <dt><a class="permalink" href="#f"><code class="Fl" id="f">-f</code></a>
+      are added
+      <a class="permalink" href="#after"><i class="Em" id="after">after</i></a>
+      the <code class="Fl">-s</code> option. If it is missing, the default size
+      of <b class="Sy">16</b> is used. Can be used multiple times.</dd>
+  <dt id="f"><a class="permalink" href="#f"><code class="Fl">-f</code></a>
     <var class="Ar">path</var></dt>
   <dd>Add a font file. The added fonts are used as fallback fonts in the order
       they are given on the command line, meaning the first given font will be
       checked first for glyphs. If the font file contains multiple fonts, the
       one with index 0 is always used. Must be specified at least once.</dd>
-  <dt><a class="permalink" href="#S"><code class="Fl" id="S">-S</code></a></dt>
+  <dt id="S"><a class="permalink" href="#S"><code class="Fl">-S</code></a></dt>
   <dd>Scroll the text through the screen instead of cutting it off at the edge
       of the screen if it overflows. The scrolling motion is rendered at 8 FPS
       so a real flipdot can keep up, which means that
       <code class="Nm">bs-renderflipdot</code> takes roughly
-      <b class="Sy">(screen_width * 2 + bitmap_width) * (1s / 8)</b> to
-    finish.</dd>
-  <dt><a class="permalink" href="#P"><code class="Fl" id="P">-P</code></a></dt>
+      <a class="permalink" href="#(screen_width"><b class="Sy" id="(screen_width">(screen_width
+      * 2 + bitmap_width) * (1s / 8)</b></a> to finish.</dd>
+  <dt id="P"><a class="permalink" href="#P"><code class="Fl">-P</code></a></dt>
   <dd>Page the text instead of cutting it off at the edge of the screen. This
       means the rendered bitmap would be cut up into pieces of
-      <b class="Sy">screen_width</b>. Each of these pieces is shown for 2s which
-      means <code class="Nm">bs-renderflipdot</code> takes roughly
-      <b class="Sy">floor(bitmap_width / screen_width) * 2s</b> to finish.
+      <a class="permalink" href="#screen_width"><b class="Sy" id="screen_width">screen_width</b></a>.
+      Each of these pieces is shown for 2s which means
+      <code class="Nm">bs-renderflipdot</code> takes roughly
+      <a class="permalink" href="#floor(bitmap_width"><b class="Sy" id="floor(bitmap_width">floor(bitmap_width
+      / screen_width) * 2s</b></a> to finish.
     <p class="Pp"></p>
   </dd>
-  <dt><a class="permalink" href="#W"><code class="Fl" id="W">-W</code></a>
+  <dt id="W"><a class="permalink" href="#W"><code class="Fl">-W</code></a>
     <var class="Ar">width</var></dt>
   <dd>Width of the target flipdot display. Only relevant if
       <code class="Fl">-n</code> is not given, defaults to
-    <b class="Sy">80</b>.</dd>
-  <dt><a class="permalink" href="#H"><code class="Fl" id="H">-H</code></a>
+      <a class="permalink" href="#80"><b class="Sy" id="80">80</b></a>.</dd>
+  <dt id="H"><a class="permalink" href="#H"><code class="Fl">-H</code></a>
     <var class="Ar">height</var></dt>
   <dd>Height of the target flipdot display. Only relevant if
       <code class="Fl">-n</code> is not given, defaults to
     <b class="Sy">16</b>.</dd>
-  <dt><a class="permalink" href="#h"><code class="Fl" id="h">-h</code></a>
+  <dt id="h"><a class="permalink" href="#h"><code class="Fl">-h</code></a>
     <var class="Ar">host</var></dt>
   <dd>Host of the target flipdot display. Only relevant if
-      <code class="Fl">-n</code> is not given, <b class="Sy">localhost</b> is
-      the default value.</dd>
-  <dt><a class="permalink" href="#p"><code class="Fl" id="p">-p</code></a>
+      <code class="Fl">-n</code> is not given,
+      <a class="permalink" href="#localhost"><b class="Sy" id="localhost">localhost</b></a>
+      is the default value.</dd>
+  <dt id="p"><a class="permalink" href="#p"><code class="Fl">-p</code></a>
     <var class="Ar">port</var></dt>
   <dd>Port of the target flipdot display. Only relevant if
-      <code class="Fl">-n</code> is not given, <b class="Sy">2323</b> is the
-      default value.</dd>
-  <dt><a class="permalink" href="#4"><code class="Fl" id="4">-4</code></a></dt>
+      <code class="Fl">-n</code> is not given,
+      <a class="permalink" href="#2323"><b class="Sy" id="2323">2323</b></a> is
+      the default value.</dd>
+  <dt id="4"><a class="permalink" href="#4"><code class="Fl">-4</code></a></dt>
   <dd>Use IPv4 address of target host if any. Otherwise the one returned first
       by <a class="Xr">getaddrinfo(3)</a> is used.</dd>
-  <dt><a class="permalink" href="#6"><code class="Fl" id="6">-6</code></a></dt>
+  <dt id="6"><a class="permalink" href="#6"><code class="Fl">-6</code></a></dt>
   <dd>Use IPv6 address of target host if any.</dd>
   <dt><code class="Fl">-</code>?</dt>
   <dd>Show usage information.</dd>
@@ -112,48 +118,45 @@
 <section class="Sh">
 <h1 class="Sh" id="EXIT_STATUS"><a class="permalink" href="#EXIT_STATUS">EXIT
   STATUS</a></h1>
-<code class="Nm">bs-renderflipdot</code> exits with 0 on success and with 1 if
-  an error of any kind occurs.
+<p class="Pp"><code class="Nm">bs-renderflipdot</code> exits with 0 on success
+    and with 1 if an error of any kind occurs.</p>
 </section>
 <section class="Sh">
 <h1 class="Sh" id="EXAMPLES"><a class="permalink" href="#EXAMPLES">EXAMPLES</a></h1>
-Render &#x201C;Hello World&#x201D; using GNU Unifont in size 16 to stdout
-  without sending it anywhere:
-<div class="Bd Pp Bd-indent">
-<pre>
-bs-renderflipdot -s 16 -f /usr/share/fonts/truetype/unifont.ttf \
-  -n &quot;Hello World&quot;
-</pre>
+<p class="Pp">Render &quot;Hello World&quot; using GNU Unifont in size 16 to
+    stdout without sending it anywhere:</p>
+<div class="Bd Pp Bd-indent Li">
+<pre>bs-renderflipdot -s 16 -f /usr/share/fonts/truetype/unifont.ttf \
+  -n &quot;Hello World&quot;</pre>
 </div>
-<p class="Pp">Render &#x201C;Hi &#x1F44B;&#x201D; black on white onto a flipdot
-    display running on <b class="Sy">flipdot.lab:2323</b> using GNU Unifont and
-    its upper codepages variant Unifont Upper:</p>
-<div class="Bd Pp Bd-indent">
-<pre>
-bs-renderflipdot -i -s 16 \
+<p class="Pp" id="flipdot.lab:2323">Render &quot;Hi &#x1F44B;&quot; black on
+    white onto a flipdot display running on
+    <a class="permalink" href="#flipdot.lab:2323"><b class="Sy">flipdot.lab:2323</b></a>
+    using GNU Unifont and its upper codepages variant Unifont Upper:</p>
+<div class="Bd Pp Bd-indent Li">
+<pre>bs-renderflipdot -i -s 16 \
   -f /usr/share/fonts/truetype/unifont.ttf \
   -f /usr/share/fonts/truetype/unifont_upper.ttf \
-  -h flipdot.lab &quot;Hi &#x1F44B;&quot;
-</pre>
+  -h flipdot.lab &quot;Hi &#x1F44B;&quot;</pre>
 </div>
 </section>
 <section class="Sh">
 <h1 class="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
   ALSO</a></h1>
-<a class="Xr">buchstabensuppe(3)</a>
+<p class="Pp"><a class="Xr">buchstabensuppe(3)</a></p>
 </section>
 <section class="Sh">
 <h1 class="Sh" id="AUTHORS"><a class="permalink" href="#AUTHORS">AUTHORS</a></h1>
-<code class="Nm">bs-renderflipdot</code> and
-  <code class="Nm">buchstabensuppe</code> have been written and documented by
-  <span class="An">sternenseemann</span>,
-  <a class="Mt" href="mailto:sterni-buchstabensuppe@systemli.org">sterni-buchstabensuppe@systemli.org</a>.
+<p class="Pp"><code class="Nm">bs-renderflipdot</code> and
+    <code class="Nm">buchstabensuppe</code> have been written and documented by
+    <span class="An">sternenseemann</span>
+    &lt;<a class="Mt" href="mailto:sterni-buchstabensuppe@systemli.org">sterni-buchstabensuppe@systemli.org</a>&gt;.</p>
 </section>
 </div>
 <table class="foot">
   <tr>
-    <td class="foot-date">March 20, 2022</td>
-    <td class="foot-os">NixOS</td>
+    <td class="foot-date">January 19, 2025</td>
+    <td class="foot-os">Nixpkgs</td>
   </tr>
 </table>
 </body>
